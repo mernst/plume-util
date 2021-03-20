@@ -90,7 +90,7 @@ checkerFramework {
     '-ArequirePrefixInWarningSuppressions',
     '-AwarnUnneededSuppressions',
     '-AcheckMustCall',
-    '-ACalledMethodsChecker_useValueChecker', // because this code does not use fluent APIs
+    '-ACalledMethodsChecker_disableReturnsReceiver', // because this code does not use fluent APIs
   ]
 }
 // To use a locally-built Checker Framework, run gradle with "-PcfLocal".
