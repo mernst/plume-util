@@ -21,3 +21,10 @@ jobs:
       run: ./gradlew build
     - name: ./gradlew requireJavadoc
       run: ./gradlew requireJavadoc
+    - name: clone plume-scripts
+      run: git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+    - name: git-clone-related checker-framework
+      run: ./git-clone-related /tmp/"$USER"/plume-scripts/git-clone-related typetools checker-framework
+    - name: CF inference tests
+      run: cd ../checker-framework && ./gradlew inferenceTests
+
