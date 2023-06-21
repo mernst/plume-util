@@ -481,7 +481,7 @@ public final class CollectionsPlume {
     "signedness", // problem with clone()
     "nullness" // generics problem
   })
-  public static <T extends @Nullable Object, C extends @Nullable Collection<T>> @PolyNull C cloneElements(@PolyNull C orig) {
+  public static <T, C extends @Nullable Collection<T>> @PolyNull C cloneElements(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }
@@ -1035,7 +1035,7 @@ public final class CollectionsPlume {
    *
    * @param <T> the type of elements of the iterator
    */
-  public static final class FilteredIterator<T extends @Nullable Object> implements Iterator<T> {
+  public static final class FilteredIterator<T> implements Iterator<T> {
     /** The iterator that this object is filtering. */
     Iterator<T> itor;
 
@@ -1547,7 +1547,7 @@ public final class CollectionsPlume {
    * @param key the value to look up in the set
    * @return the object in the given set that is equal to key, or null
    */
-  public static @Nullable Object getFromSet(Set<? extends @Nullable Object> set, Object key) {
+  public static @Nullable Object getFromSet(Set<?> set, Object key) {
     if (key == null) {
       return null;
     }

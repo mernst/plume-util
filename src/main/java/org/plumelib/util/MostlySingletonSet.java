@@ -13,7 +13,7 @@ import org.checkerframework.checker.signedness.qual.UnknownSignedness;
  *
  * @param <T> the type of elements of the set
  */
-public final class MostlySingletonSet<T extends Object> extends AbstractMostlySingletonSet<T> {
+public final class MostlySingletonSet<T extends @NonNull Object> extends AbstractMostlySingletonSet<T> {
 
   /** Create a MostlySingletonSet. */
   public MostlySingletonSet() {

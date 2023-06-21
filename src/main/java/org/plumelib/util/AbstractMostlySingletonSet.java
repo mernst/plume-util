@@ -25,7 +25,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * @param <T> the type of elements of the set
  */
-public abstract class AbstractMostlySingletonSet<T extends Object> implements Set<T> {
+public abstract class AbstractMostlySingletonSet<T extends @NonNull Object> implements Set<T> {
 
   /** The possible states of this set. */
   public enum State {

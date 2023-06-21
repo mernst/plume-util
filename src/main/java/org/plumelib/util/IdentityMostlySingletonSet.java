@@ -15,7 +15,7 @@ import org.checkerframework.checker.signedness.qual.UnknownSignedness;
  *
  * @param <T> the type of elements of the set
  */
-public final class IdentityMostlySingletonSet<T extends Object>
+public final class IdentityMostlySingletonSet<T extends @NonNull Object>
     extends AbstractMostlySingletonSet<T> {
 
   /** Create an IdentityMostlySingletonSet. */

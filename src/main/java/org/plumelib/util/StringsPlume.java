@@ -222,7 +222,7 @@ public final class StringsPlume {
   })
   @SafeVarargs
   @SideEffectFree
-  public static <T extends @MustCallUnknown Object> String join(
+  public static <T> String join(
       CharSequence delim, @Signed T... a) {
     if (a.length == 0) {
       return "";
@@ -248,7 +248,7 @@ public final class StringsPlume {
   @SafeVarargs
   @SuppressWarnings("varargs")
   @SideEffectFree
-  public static <T extends @MustCallUnknown Object> String joinLines(@Signed T... a) {
+  public static <T> String joinLines(@Signed T... a) {
     return join(lineSep, a);
   }
 
