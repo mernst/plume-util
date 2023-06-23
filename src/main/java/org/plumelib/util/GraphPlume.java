@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.signedness.qual.Signed;
 
 /** Graph utility methods. This class does not model a graph: all methods are static. */
 public final class GraphPlume {
@@ -146,7 +147,7 @@ public final class GraphPlume {
    * @param ps the PrintStream to which to print the graph
    * @param indent the number of spaces by which to indent the printed representation
    */
-  public static <T extends @NonNull Object> void print(
+  public static <T extends @NonNull @Signed Object> void print(
       Map<T, List<T>> graph, PrintStream ps, int indent) {
     String indentString = "";
     for (int i = 0; i < indent; i++) {

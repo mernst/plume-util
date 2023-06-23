@@ -24,7 +24,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * @param <T> the type of elements in the set
  */
-public class LimitedSizeSet<T extends @Nullable Object> implements Serializable, Cloneable {
+public class LimitedSizeSet<T> implements Serializable, Cloneable {
   /** Unique identifier for serialization. If you add or remove fields, change this number. */
   static final long serialVersionUID = 20031021L;
 
@@ -228,7 +228,7 @@ public class LimitedSizeSet<T extends @Nullable Object> implements Serializable,
    * @param slist a list of LimitedSizeSet, whose elements will be merged
    * @return a LimitedSizeSet that merges the elements of slist
    */
-  public static <T extends @Nullable Object> LimitedSizeSet<T> merge(
+  public static <T> LimitedSizeSet<T> merge(
       @Positive int maxValues, List<LimitedSizeSet<? extends T>> slist) {
     LimitedSizeSet<T> result = new LimitedSizeSet<>(maxValues);
     for (LimitedSizeSet<? extends T> s : slist) {
@@ -239,6 +239,7 @@ public class LimitedSizeSet<T extends @Nullable Object> implements Serializable,
 
   @SideEffectFree
   @Override
+  @SuppressWarnings("signedness:argument") // diagnostic toString
   public String toString(@GuardSatisfied LimitedSizeSet<T> this) {
     return ("[size=" + size() + "; " + (repNulled() ? "null" : ArraysPlume.toString(values)) + "]");
   }

@@ -2,6 +2,7 @@ package org.plumelib.util;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 
 /**
@@ -13,7 +14,8 @@ import org.checkerframework.checker.signedness.qual.UnknownSignedness;
  *
  * @param <T> the type of elements of the set
  */
-public final class MostlySingletonSet<T extends Object> extends AbstractMostlySingletonSet<T> {
+public final class MostlySingletonSet<T extends @NonNull Object>
+    extends AbstractMostlySingletonSet<T> {
 
   /** Create a MostlySingletonSet. */
   public MostlySingletonSet() {

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signedness.qual.PolySigned;
@@ -25,7 +26,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *
  * @param <T> the type of elements of the set
  */
-public abstract class AbstractMostlySingletonSet<T extends Object> implements Set<T> {
+public abstract class AbstractMostlySingletonSet<T extends @NonNull Object> implements Set<T> {
 
   /** The possible states of this set. */
   public enum State {
@@ -68,6 +69,7 @@ public abstract class AbstractMostlySingletonSet<T extends Object> implements Se
   }
 
   /** Throw an exception if the internal representation is corrupted. */
+  @SuppressWarnings("signedness:argument") // debugging output
   protected void checkRep() {
     if ((state == State.EMPTY && (value != null || set != null))
         || (state == State.SINGLETON && (value == null || set != null))
@@ -142,6 +144,7 @@ public abstract class AbstractMostlySingletonSet<T extends Object> implements Se
   }
 
   @Override
+  @SuppressWarnings("signedness:unsigned.concat") // don't restrict instantiation just for toString
   public String toString(@GuardSatisfied AbstractMostlySingletonSet<T> this) {
     switch (state) {
       case EMPTY:

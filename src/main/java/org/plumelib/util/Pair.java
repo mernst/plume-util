@@ -15,7 +15,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * @deprecated use {@link MPair} instead, or {@link IPair} for an immutable pair
  */
 @Deprecated // 2023-05-20
-public class Pair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
+public class Pair<T1, T2> {
   /** The first element of the pair. */
   public T1 a;
 
@@ -42,12 +42,13 @@ public class Pair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
    * @param b second argument
    * @return a pair of the values (a, b)
    */
-  public static <A extends @Nullable Object, B extends @Nullable Object> Pair<A, B> of(A a, B b) {
+  public static <A, B> Pair<A, B> of(A a, B b) {
     return new Pair<>(a, b);
   }
 
   @Override
   @SideEffectFree
+  @SuppressWarnings("signedness:argument") // diagnostic toString
   public String toString(@GuardSatisfied Pair<T1, T2> this) {
     return "<" + String.valueOf(a) + "," + String.valueOf(b) + ">";
   }

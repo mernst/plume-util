@@ -10,9 +10,10 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.dataflow.qual.Pure;
@@ -78,7 +79,7 @@ public final class Intern {
    */
   @SuppressWarnings({"interning"}) // interning implementation
   @Pure
-  public static boolean isInterned(@Nullable Object value) {
+  public static boolean isInterned(@Nullable @UnknownSignedness Object value) {
     if (value == null) {
       // nothing to do
       return true;
@@ -127,10 +128,9 @@ public final class Intern {
     }
 
     @Override
+    @SuppressWarnings("signedness:return") // Signedness doesn't matter for hashCode().
     public int hashCode(@UnknownSignedness Object o) {
-      @SuppressWarnings("signedness:cast.unsafe") // Signedness doesn't matter for hashCode().
-      Integer i = (@Signed Integer) o;
-      return i.intValue();
+      return ((Integer) o).intValue();
     }
   }
 
@@ -150,10 +150,9 @@ public final class Intern {
     }
 
     @Override
+    @SuppressWarnings("signedness:method.invocation") // Signedness doesn't matter for hashCode().
     public int hashCode(@UnknownSignedness Object o) {
-      @SuppressWarnings("signedness:cast.unsafe") // Signedness doesn't matter for hashCode().
-      Long i = (@Signed Long) o;
-      return i.intValue();
+      return ((Long) o).intValue();
     }
   }
 
@@ -483,7 +482,7 @@ public final class Intern {
    *
    * @return all the interned integers
    */
-  static Iterator<@Interned Integer> integers() {
+  static Iterator<@UnknownSignedness @Interned Integer> integers() {
     return internedIntegers.keySet().iterator();
   }
 
@@ -492,7 +491,7 @@ public final class Intern {
    *
    * @return all the interned longs
    */
-  static Iterator<@Interned Long> longs() {
+  static Iterator<@UnknownSignedness @Interned Long> longs() {
     return internedLongs.keySet().iterator();
   }
 
@@ -595,9 +594,14 @@ public final class Intern {
   // TODO: JLS 5.1.7 requires that the boxing conversion interns integer
   // values between -128 and 127 (and Intern.valueOf is intended to promise
   // the same).  This does not currently take advantage of that.
-  @SuppressWarnings({"interning", "allcheckers:purity", "lock"}) // interning implementation
+  @SuppressWarnings({
+    "interning",
+    "allcheckers:purity",
+    "lock",
+    "signedness"
+  }) // interning implementation
   @Pure
-  public static @Interned Integer intern(Integer a) {
+  public static @Interned @PolySigned Integer intern(@PolySigned Integer a) {
     WeakReference<@Interned Integer> lookup = internedIntegers.get(a);
     Integer result1 = (lookup != null) ? lookup.get() : null;
     if (result1 != null) {
@@ -616,7 +620,7 @@ public final class Intern {
    * @param i the value to intern
    * @return an interned Integer with value i
    */
-  public static @Interned Integer internedInteger(int i) {
+  public static @Interned @PolySigned Integer internedInteger(@PolySigned int i) {
     return intern(Integer.valueOf(i));
   }
 
@@ -640,9 +644,14 @@ public final class Intern {
   // TODO: JLS 5.1.7 requires that the boxing conversion interns integer
   // values between -128 and 127 (and Long.valueOf is intended to promise
   // the same).  This could take advantage of that.
-  @SuppressWarnings({"interning", "allcheckers:purity", "lock"})
+  @SuppressWarnings({
+    "interning",
+    "allcheckers:purity",
+    "lock",
+    "signedness"
+  }) // interning implementation
   @Pure
-  public static @Interned Long intern(Long a) {
+  public static @Interned @PolySigned Long intern(@PolySigned Long a) {
     WeakReference<@Interned Long> lookup = internedLongs.get(a);
     Long result1 = (lookup != null) ? lookup.get() : null;
     if (result1 != null) {
@@ -706,7 +715,7 @@ public final class Intern {
     if (result1 != null) {
       return result1;
     } else {
-      @Interned int[] result = (int @Interned @PolyValue []) a;
+      int @Interned [] result = (int @Interned @PolyValue []) a;
       internedIntArrays.put(result, new WeakReference<>(result));
       return result;
     }
@@ -1124,9 +1133,9 @@ public final class Intern {
    * interned sequence, a start index, and an end index. Requires that the sequence be interned.
    * Used for interning the repeated finding of subsequences on the same sequence.
    *
-   * @param <T> the type of elements of the sequence
+   * @param <T> the type of the sequence (not its elements)
    */
-  private static final class Subsequence<T extends @Interned Object> {
+  private static final class Subsequence<T extends @Interned @NonNull Object> {
     /** The full sequence. The Subsequence object represents part of this sequence. */
     public T seq;
 
@@ -1189,6 +1198,7 @@ public final class Intern {
     // For debugging
     @SideEffectFree
     @Override
+    @SuppressWarnings("signedness:argument") // debugging toString
     public String toString(@GuardSatisfied Subsequence<T> this) {
       return "SAI(" + start + "," + end + ") from: " + ArraysPlume.toString(seq);
     }
@@ -1197,10 +1207,11 @@ public final class Intern {
   /**
    * Hasher object which hashes and compares sequences according to their contents.
    *
-   * @param <T> the type of the elements of the sequences
+   * @param <T> the type of the sequence (not its elements)
    * @see Hasher
    */
-  private static final class SubsequenceHasher<T extends @Interned Object> implements Hasher {
+  private static final class SubsequenceHasher<T extends @Interned @NonNull Object>
+      implements Hasher {
     /** Create a new SubsequenceHasher. */
     public SubsequenceHasher() {}
 

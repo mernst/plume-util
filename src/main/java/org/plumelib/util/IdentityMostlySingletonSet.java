@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 
 /**
@@ -15,7 +16,7 @@ import org.checkerframework.checker.signedness.qual.UnknownSignedness;
  *
  * @param <T> the type of elements of the set
  */
-public final class IdentityMostlySingletonSet<T extends Object>
+public final class IdentityMostlySingletonSet<T extends @NonNull Object>
     extends AbstractMostlySingletonSet<T> {
 
   /** Create an IdentityMostlySingletonSet. */
@@ -57,7 +58,7 @@ public final class IdentityMostlySingletonSet<T extends Object>
   /** Switch the representation of this from SINGLETON to ANY. */
   private void makeNonSingleton(@GuardSatisfied IdentityMostlySingletonSet<T> this) {
     state = State.ANY;
-    set = Collections.newSetFromMap(new IdentityHashMap<>(4));
+    set = Collections.newSetFromMap(new IdentityHashMap<T, Boolean>(4));
     assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
     set.add(value);
     value = null;

@@ -72,7 +72,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
   "lock", // not yet annotated for the Lock Checker
   "nullness" // temporary; nullness is tricky because of null-padded arrays
 })
-public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSignedness Object>
+public class ArrayMap<K, V>
     extends AbstractMap<K, V> {
 
   // An alternate internal representation would be a list of Map.Entry objects (e.g.,

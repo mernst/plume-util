@@ -39,6 +39,7 @@ public class WeakIdentityPair<V1 extends @NonNull Object, V2 extends @NonNull Ob
    * @deprecated use {@link #of}
    */
   @Deprecated // 2023-05-20; to be made private
+  @SuppressWarnings("signedness:argument") // diagnostic output
   public WeakIdentityPair(V1 a, V2 b) {
     if (a == null || b == null) {
       throw new IllegalArgumentException(

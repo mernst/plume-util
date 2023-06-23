@@ -36,8 +36,7 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
  */
 // T need not extend Comparable<T>, because a comparator can be passed in.
 // TODO: Make this use IPair instead?
-public class OrderedPairIterator<T extends @Nullable Object>
-    implements java.util.Iterator<MPair<@Nullable T, @Nullable T>> {
+public class OrderedPairIterator<T> implements java.util.Iterator<MPair<@Nullable T, @Nullable T>> {
 
   /** The iterator for first elements of pairs. */
   Iterator<T> itor1;
@@ -166,7 +165,9 @@ public class OrderedPairIterator<T extends @Nullable Object>
             // Comparable<@NonNull T> cble1 = (Comparable<@NonNull T>) next1;
             @SuppressWarnings({"unchecked", "nullness"})
             Comparable<T> cble1 = (Comparable<T>) next1;
-            comparison = cble1.compareTo(next2);
+            @SuppressWarnings("signedness:method.invocation") // looks like a CF bug
+            int comparison1 = cble1.compareTo(next2);
+            comparison = comparison1;
           } else {
             comparison = comparator.compare(next1, next2);
           }
@@ -179,7 +180,9 @@ public class OrderedPairIterator<T extends @Nullable Object>
           } else if (next1 != null && next2 == null) {
             comparison = 1;
           } else {
-            throw new RuntimeException("this can't happen " + next1 + " " + next2);
+            @SuppressWarnings("signedness:unsigned.concat") // debugging toString
+            String msg = "this can't happen " + next1 + " " + next2;
+            throw new RuntimeException(msg);
           }
         }
         if (comparison < 0) {

@@ -481,7 +481,7 @@ public final class CollectionsPlume {
     "signedness", // problem with clone()
     "nullness" // generics problem
   })
-  public static <T extends @Nullable Object, C extends @Nullable Collection<T>> @PolyNull C cloneElements(@PolyNull C orig) {
+  public static <T, C extends @Nullable Collection<T>> @PolyNull C cloneElements(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }
@@ -505,7 +505,8 @@ public final class CollectionsPlume {
    * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"signedness", "nullness:argument"}) // problem with clone()
-  public static <T extends @Nullable DeepCopyable<T>, C extends @Nullable Collection<T>> @PolyNull C deepCopy(@PolyNull C orig) {
+  public static <T extends @Nullable DeepCopyable<T>, C extends @Nullable Collection<T>>
+      @PolyNull C deepCopy(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }
@@ -1035,7 +1036,7 @@ public final class CollectionsPlume {
    *
    * @param <T> the type of elements of the iterator
    */
-  public static final class FilteredIterator<T extends @Nullable Object> implements Iterator<T> {
+  public static final class FilteredIterator<T> implements Iterator<T> {
     /** The iterator that this object is filtering. */
     Iterator<T> itor;
 
@@ -1438,7 +1439,8 @@ public final class CollectionsPlume {
    * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V extends @Nullable DeepCopyable<V>, M extends @Nullable Map<K, V>> @PolyNull M deepCopyValues(@PolyNull M orig) {
+  public static <K, V extends @Nullable DeepCopyable<V>, M extends @Nullable Map<K, V>>
+      @PolyNull M deepCopyValues(@PolyNull M orig) {
     if (orig == null) {
       return null;
     }
@@ -1547,11 +1549,11 @@ public final class CollectionsPlume {
    * @param key the value to look up in the set
    * @return the object in the given set that is equal to key, or null
    */
-  public static @Nullable Object getFromSet(Set<? extends @Nullable Object> set, Object key) {
+  public static <T> @Nullable T getFromSet(Set<T> set, Object key) {
     if (key == null) {
       return null;
     }
-    for (Object elt : set) {
+    for (T elt : set) {
       if (key.equals(elt)) {
         return elt;
       }
