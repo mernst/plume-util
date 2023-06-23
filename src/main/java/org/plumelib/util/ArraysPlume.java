@@ -536,8 +536,10 @@ public final class ArraysPlume {
    *     element is found in the array
    * @see java.util.List#indexOf(java.lang.Object)
    */
+  @SuppressWarnings("mustcall:argument") // need new release of plume-util
   @Pure
-  public static <T> int indexOf(@PolySigned T[] a, @Nullable @PolySigned Object elt) {
+  public static <T> int indexOf(
+      @PolySigned T @MustCallUnknown [] a, @Nullable @PolySigned Object elt) {
     if (elt == null) {
       return indexOfEq(a, elt);
     }
@@ -562,9 +564,10 @@ public final class ArraysPlume {
    *     indexlimit}, or -1 if the element is not found in that section of the array
    * @see java.util.List#indexOf(java.lang.Object)
    */
+  @SuppressWarnings("mustcall:argument") // need new release of plume-util
   @Pure
   public static <T> int indexOf(
-      @PolySigned T[] a,
+      @PolySigned T @MustCallUnknown [] a,
       @Nullable @PolySigned Object elt,
       @IndexFor("#1") int minindex,
       @IndexOrHigh("#1") int indexlimit) {
@@ -1175,11 +1178,11 @@ public final class ArraysPlume {
    *     whether it would be the last included index or the first non-included index)
    */
   @SideEffectFree
-  public static @PolyNull @PolyInterned Object[] subarray(
-      @PolyNull @PolyInterned Object[] a,
+  public static @PolyInterned @PolyNull Object[] subarray(
+      @PolyInterned @PolyNull Object[] a,
       @NonNegative int startindex,
       @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
-    @PolyNull @PolyInterned Object[] result = new @PolyNull @PolyInterned Object[length];
+    @PolyInterned @PolyNull Object[] result = new @PolyInterned @PolyNull Object[length];
     System.arraycopy(a, startindex, result, 0, length);
     return result;
   }
@@ -1210,11 +1213,11 @@ public final class ArraysPlume {
    * @return a subarray of the given array
    */
   @SideEffectFree
-  public static @PolyNull @PolyInterned String[] subarray(
-      @PolyNull @PolyInterned String[] a,
+  public static @PolyInterned @PolyNull String[] subarray(
+      @PolyInterned @PolyNull String[] a,
       @NonNegative int startindex,
       @NonNegative @LTLengthOf(value = "#1", offset = "#2 - 1") int length) {
-    @PolyNull @PolyInterned String[] result = new @PolyNull @PolyInterned String[length];
+    @PolyInterned @PolyNull String[] result = new @PolyInterned @PolyNull String[length];
     System.arraycopy(a, startindex, result, 0, length);
     return result;
   }
@@ -1836,6 +1839,7 @@ public final class ArraysPlume {
      *
      * @return the least upper bound of the classes of the elements of this
      */
+    @SuppressWarnings("signedness:argument") // need new release of reflection-util
     @Nullable Class<?> leastUpperBound() {
       if (theArray != null) {
         return ReflectionPlume.leastUpperBound(theArray);
@@ -1988,9 +1992,9 @@ public final class ArraysPlume {
    * @param b the second array to concatenate
    * @return an array that concatenates the arguments
    */
-  public static @PolyNull @PolyInterned String[] concat(
-      @PolyNull @PolyInterned String @Nullable [] a,
-      @PolyNull @PolyInterned String @Nullable [] b) {
+  public static @PolyInterned @PolyNull String[] concat(
+      @PolyInterned @PolyNull String @Nullable [] a,
+      @PolyInterned @PolyNull String @Nullable [] b) {
     if (a == null || a.length == 0) {
       if (b == null) {
         return new String[0];
@@ -2001,7 +2005,7 @@ public final class ArraysPlume {
       if (b == null || b.length == 0) {
         return a;
       } else {
-        @PolyNull @PolyInterned String[] result = new String[a.length + b.length];
+        @PolyInterned @PolyNull String[] result = new String[a.length + b.length];
         System.arraycopy(a, 0, result, 0, a.length);
         System.arraycopy(b, 0, result, a.length, b.length);
         return result;

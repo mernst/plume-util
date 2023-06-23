@@ -237,9 +237,12 @@ public class LimitedSizeSet<T> implements Serializable, Cloneable {
     return result;
   }
 
+  @SuppressWarnings({
+    "signedness:argument", // diagnostic toString
+    "mustcall:argument" // need new release of plume-util
+  })
   @SideEffectFree
   @Override
-  @SuppressWarnings("signedness:argument") // diagnostic toString
   public String toString(@GuardSatisfied LimitedSizeSet<T> this) {
     return ("[size=" + size() + "; " + (repNulled() ? "null" : ArraysPlume.toString(values)) + "]");
   }

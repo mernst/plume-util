@@ -1545,6 +1545,7 @@ public final class CollectionsPlume {
    * this; it only provides {@code contains()}. Returns null if the argument is null, or if it isn't
    * in the set.
    *
+   * @param <T> the type of elements of the set
    * @param set a set in which to look up the value
    * @param key the value to look up in the set; unlike for {@code contains()}, it must be
    *     type-compatible with the set
