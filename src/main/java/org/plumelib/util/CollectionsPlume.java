@@ -1542,14 +1542,15 @@ public final class CollectionsPlume {
 
   /**
    * Returns the object in the given set that is equal to key. The Set abstraction doesn't provide
-   * this; it only provides "contains". Returns null if the argument is null, or if it isn't in the
-   * set.
+   * this; it only provides {@code contains()}. Returns null if the argument is null, or if it isn't
+   * in the set.
    *
    * @param set a set in which to look up the value
-   * @param key the value to look up in the set
+   * @param key the value to look up in the set; unlike for {@code contains()}, it must be
+   *     type-compatible with the set
    * @return the object in the given set that is equal to key, or null
    */
-  public static <T> @Nullable T getFromSet(Set<T> set, Object key) {
+  public static <T> @Nullable T getFromSet(Set<T> set, T key) {
     if (key == null) {
       return null;
     }
