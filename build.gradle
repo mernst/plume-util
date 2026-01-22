@@ -2,14 +2,14 @@ plugins {
   id("java-library")
 
   // To create a fat jar build/libs/...-all.jar, run: ./gradlew shadowJar
-  id("com.gradleup.shadow").version("9.3.0")
+  id("com.gradleup.shadow").version("9.3.1")
 
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck"
   // Version 8.0.0 and later requires Java 17+.
   id("com.diffplug.spotless").version("8.1.0")
 
   // Error Prone linter
-  id("net.ltgt.errorprone").version("4.3.0") apply false
+  id("net.ltgt.errorprone").version("4.4.0") apply false
 
   // PMD linter
   id("pmd")
@@ -21,7 +21,7 @@ plugins {
   id("org.checkerframework").version("0.6.61")
 
   // Publishing to Maven Central.
-  id("com.vanniktech.maven.publish").version("0.35.0")
+  id("com.vanniktech.maven.publish").version("0.36.0")
 }
 
 repositories {
@@ -32,7 +32,7 @@ repositories {
 }
 
 ext {
-  errorproneVersion = "2.45.0"
+  errorproneVersion = "2.46.0"
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 }
@@ -45,7 +45,7 @@ dependencies {
   // error_prone_annotations.  (Even if the dependency is "compileOnly".)
   // implementation("com.google.errorprone:error_prone_annotations:${errorproneVersion}")
 
-  testImplementation("org.junit.jupiter:junit-jupiter:5.14.1")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.14.2")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -111,14 +111,12 @@ tasks.withType(JavaCompile).configureEach {
   options.forkOptions.jvmArgs += "-Xmx6g"
   options.compilerArgs << "-Werror"
   // "-processing" avoids javac warning "No processor claimed any of these annotations".
-  // "-options" is because of JDK 21 warning "source value 8 is obsolete..."
+  // "-Xlint:-options" is because of JDK 21 warning "source value 8 is obsolete..."
   if (isJava21orHigher) {
     options.compilerArgs << "-Xlint:all,-processing,-options,-this-escape"
   } else {
     options.compilerArgs << "-Xlint:all,-processing,-options"
   }
-  // // Only needed when debugging.
-  // options.compilerArgs << "-g"
 }
 if (isJava21orHigher) {
   apply plugin: "net.ltgt.errorprone"
@@ -144,7 +142,7 @@ if (isJava21orHigher) {
 // PMD linter
 
 pmd {
-  toolVersion = "7.19.0"
+  toolVersion = "7.20.0"
   ruleSetFiles = files("${rootDir}/.pmd-ruleset.xml")
   consoleOutput = true
   ignoreFailures = false
@@ -183,9 +181,9 @@ checkerFramework {
   ]
 }
 // To use a snapshot version of the Checker Framework.
-if (false) {
+if (true) {
   // If the above is true, change it to false after CF is released.
-  ext.checkerFrameworkVersion = "3.52.1"
+  ext.checkerFrameworkVersion = "3.53.1-SNAPSHOT"
   dependencies {
     compileOnly("org.checkerframework:checker-qual:${checkerFrameworkVersion}")
     testCompileOnly("org.checkerframework:checker-qual:${checkerFrameworkVersion}")
@@ -207,8 +205,11 @@ if (project.hasProperty("cfLocal")) {
 
 // Javadoc
 
-// Turn Javadoc warnings into errors.
+tasks.withType(Javadoc) {
+  options.noTimestamp = true
+}
 javadoc {
+  // Turn Javadoc warnings into errors.
   options.addStringOption("Xwerror", "-Xdoclint:all")
   options.addStringOption("private", "-quiet")
   options.addStringOption("source", "8")
@@ -256,12 +257,13 @@ configurations {
 dependencies {
   requireJavadoc("org.plumelib:require-javadoc:2.0.0")
 }
-tasks.register("requireJavadoc", JavaExec) {
+def requireJavadoc = tasks.register("requireJavadoc", JavaExec) {
   group = "Documentation"
   description = "Ensures that Javadoc documentation exists."
+  inputs.files(sourceSets.main.allJava)
   mainClass = "org.plumelib.javadoc.RequireJavadoc"
   classpath = configurations.requireJavadoc
-  args("src/main/java")
+  args(sourceSets.main.allJava.srcDirs.collect{it.getAbsolutePath()})
   jvmArgs += [
     "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
     "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
@@ -317,17 +319,4 @@ mavenPublishing {
 tasks.register("tags", Exec) {
   description = "Run etags to create an Emacs TAGS table"
   commandLine("bash", "-c", "find src/ -name '*.java' | sort | xargs etags")
-}
-
-
-// Debugging support
-
-tasks.register("printCompileClasspaths") {
-  description = "Print the compile-time classpaths"
-  doFirst {
-    println("Compile classpath:")
-    println(sourceSets.main.compileClasspath.asPath)
-    println("Compile test classpath:")
-    println(sourceSets.test.compileClasspath.asPath)
-  }
 }

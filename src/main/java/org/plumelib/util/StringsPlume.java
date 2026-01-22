@@ -61,7 +61,6 @@ public final class StringsPlume {
    * @return the target with an occurrence of oldStr at the start replaced by newStr; returns the
    *     target if it does not start with oldStr
    */
-  @SuppressWarnings("index:argument") // startsWith implies indexes fit
   @SideEffectFree
   public static String replacePrefix(String target, String oldStr, String newStr) {
     if (target.startsWith(oldStr)) {
@@ -475,6 +474,9 @@ public final class StringsPlume {
             postEsc = i + 1;
             break;
           } else {
+            if (postEsc < i) {
+              sb.append(orig.substring(postEsc, i));
+            }
             sb.append("\\u");
             sb.append(String.format("%04x", (int) c));
             postEsc = i + 1;
