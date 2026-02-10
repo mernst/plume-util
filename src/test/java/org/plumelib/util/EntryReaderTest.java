@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.plumelib.util.EntryReader.CommentFormat;
+import org.plumelib.util.EntryReader.EntryFormat;
 
 /** Test the EntryReader class. */
 @SuppressWarnings({
@@ -39,7 +41,8 @@ final class EntryReaderTest {
   void testBasicLineReading() throws IOException {
     String content = "line1\nline2\nline3\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertEquals("line1", reader.readLine());
       assertEquals("line2", reader.readLine());
       assertEquals("line3", reader.readLine());
@@ -78,7 +81,12 @@ final class EntryReaderTest {
   void testCommentRemoval() throws IOException {
     String content = "line1\n% comment line\nline2 % inline comment\nline3\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, "^%.*", null)) {
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.DEFAULT,
+            CommentFormat.TEX_AT_START_OF_LINE,
+            null)) {
       assertEquals("line1", reader.readLine());
       assertEquals("line2 % inline comment", reader.readLine()); // no inline comment removal
       assertEquals("line3", reader.readLine());
@@ -91,7 +99,12 @@ final class EntryReaderTest {
   void testFullLineCommentSkipped() throws IOException {
     String content = "line1\n% full comment\nline2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, "^%.*", null)) {
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.DEFAULT,
+            CommentFormat.TEX_AT_START_OF_LINE,
+            null)) {
       assertEquals("line1", reader.readLine());
       assertEquals("line2", reader.readLine());
       assertNull(reader.readLine());
@@ -103,7 +116,8 @@ final class EntryReaderTest {
   void test_iterator() throws IOException {
     String content = "line1\nline2\nline3\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       List<String> lines = new ArrayList<>();
       for (String line : reader) {
         lines.add(line);
@@ -120,7 +134,8 @@ final class EntryReaderTest {
   void test_hasNext() throws IOException {
     String content = "line1\nline2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertTrue(reader.hasNext());
       reader.next();
       assertTrue(reader.hasNext());
@@ -134,7 +149,8 @@ final class EntryReaderTest {
   void testNextThrowsAtEnd() throws IOException {
     String content = "line1\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       reader.next();
       assertThrows(NoSuchElementException.class, reader::next);
     }
@@ -145,7 +161,8 @@ final class EntryReaderTest {
   void testRemoveNotSupported() throws IOException {
     String content = "line1\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertThrows(UnsupportedOperationException.class, reader::remove);
     }
   }
@@ -155,7 +172,8 @@ final class EntryReaderTest {
   void testGetEntryBlankSeparated() throws IOException {
     String content1 = "para1 line1\npara1 line2\n\npara2 line1\npara2 line2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content1), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content1), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -163,7 +181,8 @@ final class EntryReaderTest {
 
     String content2 = "para1 line1\npara1 line2\n\n\npara2 line1\npara2 line2";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content2), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content2), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -171,7 +190,8 @@ final class EntryReaderTest {
 
     String content3 = "\n\n\npara1 line1\npara1 line2\n\npara2 line1\npara2 line2\n\n\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content3), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content3), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -183,8 +203,12 @@ final class EntryReaderTest {
   void testGetEntryTwoBlankSeparated() throws IOException {
     String content1 = "para1 line1\npara1 line2\n\npara2 line1\npara2 line2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content1), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content1),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals(
           "para1 line1\npara1 line2\n\npara2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -192,8 +216,12 @@ final class EntryReaderTest {
 
     String content1a = "para1 line1\npara1 line2\n \npara2 line1\npara2 line2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content1a), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content1a),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals(
           "para1 line1\npara1 line2\n \npara2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -201,8 +229,12 @@ final class EntryReaderTest {
 
     String content2 = "para1 line1\npara1 line2\n\n\npara2 line1\npara2 line2";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content2), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content2),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -210,8 +242,12 @@ final class EntryReaderTest {
 
     String content2a = "para1 line1\npara1 line2\n \n\npara2 line1\npara2 line2";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content2a), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content2a),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -219,8 +255,12 @@ final class EntryReaderTest {
 
     String content3 = "\n\n\npara1 line1\npara1 line2\n\n\n\npara2 line1\npara2 line2\n\n\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content3), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content3),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -229,8 +269,12 @@ final class EntryReaderTest {
     String content3a =
         "\n \n \npara1 line1\npara1 line2\n \n \n\npara2 line1\npara2 line2\n \n \n \n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content3a), "test", true, null, null)) {
-      reader.twoBlankLines = true;
+        new EntryReader(
+            new StringReader(content3a),
+            "test",
+            EntryFormat.TWO_BLANK_LINES,
+            CommentFormat.NONE,
+            null)) {
       assertEquals("para1 line1\npara1 line2\n", reader.getEntry().body);
       assertEquals("para2 line1\npara2 line2\n", reader.getEntry().body);
       assertNull(reader.getEntry());
@@ -243,8 +287,12 @@ final class EntryReaderTest {
     String content =
         "START entry1\nentry1 line2\nentry1 line3\nEND\nSTART entry2\nentry2 line2\nEND\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
-      reader.setEntryStartStop("^START (.*)$", "^END$");
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            new EntryFormat("^START (.*)$", "^END$", false, false),
+            CommentFormat.NONE,
+            null)) {
 
       EntryReader.Entry entry1 = reader.getEntry();
       assertNotNull(entry1);
@@ -269,7 +317,8 @@ final class EntryReaderTest {
   void testLineNumberTracking() throws IOException {
     String content = "line1\nline2\nline3\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       reader.readLine();
       assertEquals(1, reader.getLineNumber());
       reader.readLine();
@@ -284,7 +333,8 @@ final class EntryReaderTest {
   void test_setLineNumber() throws IOException {
     String content = "line1\nline2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       reader.readLine();
       reader.setLineNumber(10);
       assertEquals(10, reader.getLineNumber());
@@ -296,7 +346,12 @@ final class EntryReaderTest {
   void test_getFileName() throws IOException {
     String content = "line1\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "myfile.txt", false, null, null)) {
+        new EntryReader(
+            new StringReader(content),
+            "myfile.txt",
+            EntryFormat.DEFAULT,
+            CommentFormat.NONE,
+            null)) {
       assertEquals("myfile.txt", reader.getFileName());
     }
   }
@@ -306,7 +361,8 @@ final class EntryReaderTest {
   void test_putback() throws IOException {
     String content = "line1\nline2\nline3\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       String line1 = reader.readLine();
       assertEquals("line1", line1);
       reader.putback(line1);
@@ -320,7 +376,8 @@ final class EntryReaderTest {
   void testPutbackTwiceThrows() throws IOException {
     String content = "line1\nline2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       String line1 = reader.readLine();
       reader.putback(line1);
       assertThrows(Error.class, () -> reader.putback("line2"));
@@ -332,7 +389,8 @@ final class EntryReaderTest {
   void testEntryGetDescriptionNoRegex() throws IOException {
     String content = "first line\nsecond line\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       EntryReader.Entry entry = reader.getEntry();
       assertNotNull(entry);
       assertEquals("first line", entry.getDescription(null));
@@ -344,7 +402,8 @@ final class EntryReaderTest {
   void testEntryGetDescriptionWithRegex() throws IOException {
     String content = "Some text with [DESCRIPTION] in body\nmore text\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       EntryReader.Entry entry = reader.getEntry();
       assertNotNull(entry);
       String description = entry.getDescription(java.util.regex.Pattern.compile("\\[.*?\\]"));
@@ -357,7 +416,8 @@ final class EntryReaderTest {
   void testEntryGetDescriptionNoMatch() throws IOException {
     String content = "first line\nsecond line\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       EntryReader.Entry entry = reader.getEntry();
       assertNotNull(entry);
       String description = entry.getDescription(java.util.regex.Pattern.compile("NOMATCH"));
@@ -370,7 +430,8 @@ final class EntryReaderTest {
   void testEmptyInput() throws IOException {
     String content = "";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertNull(reader.readLine());
       assertFalse(reader.hasNext());
       assertNull(reader.getEntry());
@@ -382,7 +443,8 @@ final class EntryReaderTest {
   void testOnlyBlankLines() throws IOException {
     String content = "\n\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertNull(reader.getEntry()); // blank lines are skipped
     }
   }
@@ -405,7 +467,8 @@ final class EntryReaderTest {
   void testIteratorReturnsSameInstance() throws IOException {
     String content = "line1\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       assertSame(reader, reader.iterator()); // identity test
     }
   }
@@ -415,7 +478,12 @@ final class EntryReaderTest {
   void testMixedCommentsAndContent() throws IOException {
     String content = "# comment1\nline1\n# comment2\n# comment3\nline2\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, "^#.*", null)) {
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.DEFAULT,
+            CommentFormat.SHELL_AT_START_OF_LINE,
+            null)) {
       assertEquals("line1", reader.readLine());
       assertEquals("line2", reader.readLine());
       assertNull(reader.readLine());
@@ -427,7 +495,8 @@ final class EntryReaderTest {
   void testGetEntryWithLeadingBlankLines() throws IOException {
     String content = "\n\nline1\nline2\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "test", false, null, null)) {
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, CommentFormat.NONE, null)) {
       EntryReader.Entry entry = reader.getEntry();
       assertNotNull(entry);
       assertEquals("line1", entry.firstLine);
@@ -440,11 +509,329 @@ final class EntryReaderTest {
   void testEntryMetadata() throws IOException {
     String content = "\nline1\nline2\n\n";
     try (EntryReader reader =
-        new EntryReader(new StringReader(content), "testfile.txt", false, null, null)) {
+        new EntryReader(
+            new StringReader(content),
+            "testfile.txt",
+            EntryFormat.DEFAULT,
+            CommentFormat.NONE,
+            null)) {
       EntryReader.Entry entry = reader.getEntry();
       assertNotNull(entry);
       assertEquals("testfile.txt", entry.filename);
       assertEquals(2, entry.lineNumber); // line 2 after the leading blank line
+    }
+  }
+
+  /** A comment format that has both single-line and multi-line comments. */
+  private static final CommentFormat SHELL_AND_HTML = new CommentFormat("#", "<!--", "-->");
+
+  /** Test multi-line comments. */
+  @Test
+  void testMultilineComments() throws IOException {
+    String content = String.join(System.lineSeparator(), "<!--", "line1", "line2", "line3", "-->");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertNull(reader.getEntry());
+    }
+  }
+
+  /** Test multi-line comments surrounded by content. */
+  @Test
+  void testMultilineCommentsWithContent() throws IOException {
+    String content =
+        String.join(
+            System.lineSeparator(),
+            "line1",
+            "line2",
+            "<!--",
+            "cline1",
+            "cline2",
+            "cline3",
+            "-->",
+            "line3");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+
+      assertEquals("line1", reader.readLine());
+      assertEquals("line2", reader.readLine());
+      assertEquals("line3", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Test multi-line comments that contain a comment and a blank line inside. */
+  @Test
+  void testMultilineCommentsWithCommentInside() throws IOException {
+    String content =
+        String.join(
+            System.lineSeparator(), "<!--", "cline1", "# comment", "cline2", "", "cline3", "-->");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+
+      assertNull(reader.getEntry());
+    }
+  }
+
+  /** Test fenced code blocks (including a blank line inside). */
+  @Test
+  void testFencedCodeBlockWithBlankLine_nomarkdown() throws IOException {
+    String content =
+        String.join(
+            System.lineSeparator(),
+            "pre",
+            "```sh",
+            "code1",
+            "", // blank line inside the fenced block
+            "code2",
+            "```",
+            "post");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+
+      assertEquals("pre", reader.readLine());
+      assertEquals("```sh", reader.readLine());
+      assertEquals("code1", reader.readLine());
+      assertEquals("", reader.readLine());
+      assertEquals("code2", reader.readLine());
+      assertEquals("```", reader.readLine());
+      assertEquals("post", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Test fenced code blocks (including a blank line inside). */
+  @Test
+  void testFencedCodeBlockWithBlankLine_withmarkdown() throws IOException {
+    String content =
+        String.join(
+            System.lineSeparator(),
+            "pre",
+            "```sh",
+            "code1",
+            "", // blank line inside the fenced block
+            "code2",
+            "<!--",
+            "code3",
+            "```",
+            "post");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.FENCED_CODE_BLOCKS,
+            SHELL_AND_HTML,
+            null)) {
+
+      assertEquals("pre", reader.readLine());
+      assertEquals("```sh", reader.readLine());
+      assertEquals("code1", reader.readLine());
+      assertEquals("", reader.readLine());
+      assertEquals("code2", reader.readLine());
+      assertEquals("<!--", reader.readLine());
+      assertEquals("code3", reader.readLine());
+      assertEquals("```", reader.readLine());
+      assertEquals("post", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Unterminated multi-line comment should throw an error. */
+  @Test
+  void testUnterminatedMultilineComment() throws IOException {
+    String content = String.join(System.lineSeparator(), "<!--", "line1", "line2");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+
+      assertThrows(IOException.class, reader::getEntry);
+    }
+  }
+
+  /** Multiline comment on a single line: preserve prefix and suffix as if comment were absent. */
+  @Test
+  void testMultilineSameLine_preservePrefixAndSuffix() throws IOException {
+    String content = "pre<!--mid-->post\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("prepost", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Multiline comment across lines: preserve prefix from first line and suffix from last line. */
+  @Test
+  void testMultilineAcrossLines_preservePrefixAndSuffix() throws IOException {
+    String content = "pre<!--mid\n" + "stillmid\n" + "end-->post\n" + "after\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("prepost", reader.readLine());
+      assertEquals("after", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** If stripping a multiline comment results in an empty line, readLine skips to the next. */
+  @Test
+  void testMultilineWholeLineSkipped_sameLine() throws IOException {
+    String content = "<!--wholeline-->\n" + "x\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("x", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  @Test
+  void testMultilineWholeLineSkipped_acrossLines() throws IOException {
+    String content = "<!--start\n" + "middle\n" + "end-->\n" + "y\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("y", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Multiline comment on a single line: preserve prefix and suffix as if comment were absent. */
+  @Test
+  void testMultilineSameLine_multiple() throws IOException {
+    String content = "a<!--b-->c<!--d-->e\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("ace", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Multiline comment on a single line: preserve prefix and suffix as if comment were absent. */
+  @Test
+  void testMultilineSameLine_multipleAbutting() throws IOException {
+    String content = "a<!--b-->c<!--d-->e\n" + "<!--b--><!--d-->\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("ace", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** If both lineCommentRegex and multilineCommentStart occur, and lineCommentRegex comes first. */
+  @Test
+  void testCommentPrecedence_singleLineBeforeMultiline() throws IOException {
+    // On the first line, // starts before /*, so we should NOT enter multiline mode.
+    // The next line that looks like a multiline end should be returned as normal text.
+    String content = "code#slc <!-- not-started\n" + "-->still-text\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("code", reader.readLine());
+      assertEquals("-->still-text", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /**
+   * If both lineCommentRegex and multilineCommentStart occur, and multilineCommentStart comes first
+   */
+  @Test
+  void testCommentPrecedence_multilineBeforeSingleLine() throws IOException {
+    // /* occurs before //, so multiline is stripped first; then // is stripped from the suffix.
+    String content = "code<!--ml#-->more#slc\n";
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content), "test", EntryFormat.DEFAULT, SHELL_AND_HTML, null)) {
+      assertEquals("codemore", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /** Test fenced code blocks (including a blank line inside), with Markdown enabled. */
+  @Test
+  void testFencedCodeBlocksWithBlankLine_markdown() throws IOException {
+    String content =
+        String.join(System.lineSeparator(), "pre", "```sh", "code1", "", "code2", "```", "post");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.FENCED_CODE_BLOCKS,
+            SHELL_AND_HTML,
+            null)) {
+
+      assertEquals("pre", reader.readLine());
+      assertEquals("```sh", reader.readLine());
+      assertEquals("code1", reader.readLine());
+      assertEquals("", reader.readLine());
+      assertEquals("code2", reader.readLine());
+      assertEquals("```", reader.readLine());
+      assertEquals("post", reader.readLine());
+      assertNull(reader.readLine());
+    }
+  }
+
+  /**
+   * Test fenced code blocks and multiline comments: comments stripped outside fences, but preserved
+   * inside fences (Markdown enabled).
+   */
+  @Test
+  void testFencedCodeBlocksAndComments_markdown() throws IOException {
+    String content =
+        String.join(
+            System.lineSeparator(),
+            "pre",
+            "<!--",
+            "outside",
+            "-->",
+            "mid",
+            "```sh",
+            "<!-- inside fence should be preserved -->",
+            "",
+            "# inside fence should be preserved",
+            "code",
+            "```",
+            "<!--",
+            "outside2",
+            "-->",
+            "post");
+
+    try (EntryReader reader =
+        new EntryReader(
+            new StringReader(content),
+            "test",
+            EntryFormat.FENCED_CODE_BLOCKS,
+            SHELL_AND_HTML,
+            null)) {
+
+      // Outside fenced block: multiline comments are stripped.
+      assertEquals("pre", reader.readLine());
+      assertEquals("mid", reader.readLine());
+
+      // Inside fenced block: lines are returned verbatim (no comment stripping).
+      assertEquals("```sh", reader.readLine());
+      assertEquals("<!-- inside fence should be preserved -->", reader.readLine());
+      assertEquals("", reader.readLine());
+      assertEquals("# inside fence should be preserved", reader.readLine());
+      assertEquals("code", reader.readLine());
+      assertEquals("```", reader.readLine());
+
+      // Outside again: multiline comments stripped.
+      assertEquals("post", reader.readLine());
+      assertNull(reader.readLine());
     }
   }
 }

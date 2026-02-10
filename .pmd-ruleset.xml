@@ -176,7 +176,7 @@
     <rule ref="category/java/design.xml/ImmutableField" />
     <rule ref="category/java/design.xml/MutableStaticState" />
     -->
-
+    
     <!-- design rules we are not using
     <rule ref="category/java/design.xml/AvoidCatchingGenericException" />
     <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts" />
@@ -239,7 +239,6 @@
     <rule ref="category/java/errorprone.xml/DoNotExtendJavaLangThrowable" />
     <rule ref="category/java/errorprone.xml/DoNotHardCodeSDCard" />
     <rule ref="category/java/errorprone.xml/DoNotThrowExceptionInFinally" />
-    <rule ref="category/java/errorprone.xml/DontImportSun" />
     <rule ref="category/java/errorprone.xml/DontUseFloatTypeForLoopIndices" />
     <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
       <properties>
