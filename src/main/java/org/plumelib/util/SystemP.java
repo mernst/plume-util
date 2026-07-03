@@ -2,11 +2,14 @@
 
 package org.plumelib.util;
 
+import java.io.File;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Locale;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -284,5 +287,37 @@ public final class SystemP {
           "total memory = " + Runtime.getRuntime().totalMemory(),
           " free memory = " + Runtime.getRuntime().freeMemory());
     }
+  }
+
+  //
+  // Paths
+  //
+
+  /**
+   * Returns the absolute path of a program that is on the system PATH.
+   *
+   * @param programName the name of the program
+   * @return the absolute path of the program
+   */
+  public static @Nullable String pathToExecutable(String programName) {
+    String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+    if (osName.contains("win") && !programName.endsWith(".exe")) {
+      programName += ".exe";
+    }
+
+    String path = System.getenv("PATH");
+    if (path == null || path.isEmpty()) {
+      return null;
+    }
+
+    @SuppressWarnings("StringSplitter") // the behavior is desirable
+    String[] pathDirs = path.split(Pattern.quote(System.getProperty("path.separator")));
+    for (String dir : pathDirs) {
+      File file = new File(dir, programName);
+      if (file.isFile() && file.canExecute()) {
+        return file.getAbsolutePath();
+      }
+    }
+    return null; // Executable not found in PATH
   }
 }

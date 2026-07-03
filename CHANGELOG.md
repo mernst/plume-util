@@ -11,6 +11,7 @@
   * `CollectionsP.Replacement`
   * `EntryReader.Entry`
 * New overloads of `UtilP.backticks()` that take a directory argument.
+* New method `SystemP.pathToExecutable()`.
 
 ## 1.14.0 (2026-03-05)
 
