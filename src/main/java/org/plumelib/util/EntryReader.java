@@ -932,7 +932,7 @@ public class EntryReader extends LineNumberReader implements Iterable<String>, I
   }
 
   /**
-   * Set the current line number in the current file.
+   * Sets the current line number in the current file.
    *
    * @param lineNumber new line number for the current file
    */
@@ -946,7 +946,7 @@ public class EntryReader extends LineNumberReader implements Iterable<String>, I
   }
 
   /**
-   * Set debugging on or off.
+   * Sets debugging on or off.
    *
    * @param debug true if debugging is on
    */
@@ -959,7 +959,7 @@ public class EntryReader extends LineNumberReader implements Iterable<String>, I
   //
 
   /**
-   * Read a line, ignoring comments and processing includes. Returns null at end of file.
+   * Reads a line, ignoring comments and processing includes. Returns null at end of file.
    *
    * <p>A line that is completely a comment is ignored (and not returned as a blank line).
    *
@@ -1104,7 +1104,7 @@ public class EntryReader extends LineNumberReader implements Iterable<String>, I
     }
 
     // Handle include files.  Non-absolute pathnames are relative
-    // to the including file (the current file)
+    // to the including file (the current file).
     if (includeRegex != null) {
       Matcher m = includeRegex.matcher(line);
       if (m.matches()) {
@@ -1330,7 +1330,7 @@ public class EntryReader extends LineNumberReader implements Iterable<String>, I
         line = readLine();
       }
 
-      // If this entry was terminated by the start of a new input file
+      // If this entry was terminated by the start of a new input file,
       // put that line back.
       if ((line != null) && !filename.equals(getFileName())) {
         putback(line);

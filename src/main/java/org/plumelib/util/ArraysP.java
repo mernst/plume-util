@@ -72,7 +72,7 @@ public final class ArraysP {
    *
    * @param <T> the type of the array elements
    * @param array the array
-   * @param lastElt the new last elemeent
+   * @param lastElt the new last element
    * @return a new array containing the array elements and the last element, in that order
    */
   @SuppressWarnings({
@@ -798,7 +798,7 @@ public final class ArraysP {
    * @param elt the element to search for
    * @param minindex first index at which to search
    * @param indexlimit first index at which not to search
-   * @return the first index i containing the specified element, such that {@code minindex <=; i <
+   * @return the first index i containing the specified element, such that {@code minindex <= i <
    *     indexlimit}, or -1 if the element is not found in the array
    * @see java.util.ArrayList#indexOf(java.lang.Object)
    */
@@ -824,7 +824,7 @@ public final class ArraysP {
    * @param elt the element to search for
    * @param minindex first index at which to search
    * @param indexlimit first index at which not to search
-   * @return the first index i containing the specified element, such that {@code minindex <=; i <
+   * @return the first index i containing the specified element, such that {@code minindex <= i <
    *     indexlimit}, or -1 if the element is not found in the array
    * @see java.util.ArrayList#indexOf(java.lang.Object)
    */
@@ -888,7 +888,7 @@ public final class ArraysP {
    * @param elt the element to search for
    * @param minindex first index at which to search
    * @param indexlimit first index at which not to search
-   * @return the first index i containing the specified element, such that {@code minindex <=; i <
+   * @return the first index i containing the specified element, such that {@code minindex <= i <
    *     indexlimit}, or -1 if the element is not found in the array
    * @see java.util.ArrayList#indexOf(java.lang.Object)
    */
@@ -4327,7 +4327,7 @@ public final class ArraysP {
   }
 
   /**
-   * Replaces all occurrences of one specified value in a array with another. More formally,
+   * Replaces all occurrences of one specified value in an array with another. More formally,
    * replaces with newVal each element e in array such that (oldVal==null ? e==null :
    * oldVal.equals(e)). (This method has no effect on the size of the array.)
    *

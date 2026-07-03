@@ -18,7 +18,6 @@ import org.checkerframework.dataflow.qual.Pure;
  * This class extends IOException by also reporting a file name and line number at which the
  * exception occurred. It requires use of a {@link LineNumberReader}.
  */
-@SuppressWarnings("PMD.ConstructorCallsOverridableMethod")
 public class FileIOException extends IOException {
   /** Unique identifier for serialization. If you add or remove fields, change this number. */
   static final long serialVersionUID = 20050923L;
@@ -44,17 +43,15 @@ public class FileIOException extends IOException {
   // Without a message (with a Throwable instead)
   //
 
-  // If cause is null, the super call throws a null pointer exception.
-  // This looks like a JDK bug.  12/9/2008
   /**
    * Create a FileIOException.
    *
    * @param cause the exception that occurred
    */
   public FileIOException(@Nullable Throwable cause) {
-    // The "super(Throwable)" constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    initCause(cause);
+    // If cause is null, the super call throws a null pointer exception.
+    // This looks like a JDK bug.  12/9/2008
+    super(cause);
     fileName = null;
     lineNumber = -1;
   }
@@ -82,10 +79,7 @@ public class FileIOException extends IOException {
    * @param cause the exception that occurred
    */
   public FileIOException(@Nullable String message, @Nullable Throwable cause) {
-    // The "super(String, Throwable) constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    super(message);
-    initCause(cause);
+    super(message, cause);
     fileName = null;
     lineNumber = -1;
   }
@@ -119,10 +113,7 @@ public class FileIOException extends IOException {
       @Nullable Throwable cause,
       @Nullable String fileName,
       int lineNumber) {
-    // The "super(String, Throwable) constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    super(message);
-    initCause(cause);
+    super(message, cause);
     this.fileName = fileName;
     this.lineNumber = lineNumber;
   }
@@ -195,9 +186,7 @@ public class FileIOException extends IOException {
    */
   public FileIOException(
       @Nullable LineNumberReader reader, @Nullable String fileName, @Nullable Throwable cause) {
-    // The "super(Throwable) constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    initCause(cause);
+    super(cause);
     this.fileName = fileName;
     this.lineNumber = getLineNumber(reader);
   }
@@ -215,10 +204,7 @@ public class FileIOException extends IOException {
       @Nullable LineNumberReader reader,
       @Nullable String fileName,
       @Nullable Throwable cause) {
-    // The "super(String, Throwable) constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    super(message);
-    initCause(cause);
+    super(message, cause);
     this.fileName = fileName;
     this.lineNumber = getLineNumber(reader);
   }
@@ -262,9 +248,7 @@ public class FileIOException extends IOException {
    * @param cause the exception that occurred
    */
   public FileIOException(@Nullable LineNumberReader reader, File file, @Nullable Throwable cause) {
-    // The "super(Throwable) constructor exists in Java 6 and later.
-    // For backward compatibility, use the initCause method instead.
-    initCause(cause);
+    super(cause);
     this.fileName = file.getName();
     this.lineNumber = getLineNumber(reader);
   }
