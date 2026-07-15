@@ -13,6 +13,7 @@
 * New class `UnionFind`; it supports obtaining sets and maintaining predicates.
 * New overloads of `UtilP.backticks()` that take a directory argument.
 * New method `SystemP.pathToExecutable()`.
+* Deprecated `StringsP.isBlank()`; use `String.isBlank()` instead.
 
 ## 1.14.0 (2026-03-05)
 
