@@ -792,25 +792,6 @@ public final class MathP {
   //
 
   /**
-   * Returns z such that {@code (z == x mod y) && (0 <= z < abs(y))}. This should really be named
-   * {@code modNonnegative} rather than {@code modPositive}.
-   *
-   * @param x value to be modded
-   * @param y modulus
-   * @return x % y, where the result is constrained to be non-negative
-   * @deprecated use {@link #modNonnegative(int, int)}
-   */
-  @Deprecated(since = "2020-02-20")
-  // @InlineMe(replacement = "MathP.modNonnegative(x, y)", imports =
-  // "org.plumelib.util.MathP")
-  @Pure
-  @StaticallyExecutable
-  public static @NonNegative @LessThan("#2") @PolyUpperBound int modPositive(
-      int x, @PolyUpperBound int y) {
-    return modNonnegative(x, y);
-  }
-
-  /**
    * Returns z such that {@code (z == x mod y) && (0 <= z < abs(y))}.
    *
    * @param x value to be modded
@@ -1034,25 +1015,6 @@ public final class MathP {
   }
 
   // modulus for long (as opposed to int) values
-
-  /**
-   * Returns z such that {@code (z == x mod y) && (0 <= z < abs(y))}. This should really be named
-   * {@code modNonnegative} rather than {@code modPositive}.
-   *
-   * @param x value to be modded
-   * @param y modulus
-   * @return x % y, where the result is constrained to be non-negative
-   * @deprecated use {@link #modNonnegative(long, long)}
-   */
-  @Deprecated(since = "2020-02-20")
-  // @InlineMe(replacement = "modNonnegative(x, y)", imports =
-  // "org.plumelib.util.MathP")
-  @Pure
-  @StaticallyExecutable
-  public static @NonNegative @LessThan("#2") @PolyUpperBound long modPositive(
-      long x, @PolyUpperBound long y) {
-    return modNonnegative(x, y);
-  }
 
   /**
    * Returns z such that {@code (z == x mod y) && (0 <= z < abs(y))}.

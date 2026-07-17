@@ -49,26 +49,6 @@ public abstract class SIList<E> implements Iterable<E>, Serializable {
    * Create a SIList from a JDK Collection.
    *
    * @param <E2> the type of list elements
-   * @param list the elements of the new list
-   * @return the new list
-   * @deprecated use {@link #from(Collection)}
-   */
-  @Deprecated(since = "2025-08-30")
-  public static <E2> SIList<E2> fromList(Collection<E2> list) {
-    int size = list.size();
-    if (size == 0) {
-      return empty();
-    } else if (size == 1) {
-      return singleton(list.iterator().next());
-    } else {
-      return new SimpleArrayList<>(list);
-    }
-  }
-
-  /**
-   * Create a SIList from a JDK Collection.
-   *
-   * @param <E2> the type of list elements
    * @param c the elements of the new list
    * @return the new list
    */

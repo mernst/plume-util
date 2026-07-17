@@ -477,43 +477,6 @@ public final class StringsP {
   }
 
   /**
-   * Like {@link #escapeJava(String)}, but for a single character. Note that this quotes its
-   * argument for inclusion in a string literal, not in a character literal.
-   *
-   * @param ch character to quote
-   * @return quoted version of ch
-   * @deprecated use {@link #escapeJava(String)} or {@link #charLiteral(Character)}
-   */
-  @Deprecated(since = "2021-03-14")
-  @SideEffectFree
-  public static String escapeJava(Character ch) {
-    return escapeJava(ch.charValue());
-  }
-
-  /**
-   * Like {@link #escapeJava(String)}, but for a single character. Note that this quotes its
-   * argument for inclusion in a string literal, not in a character literal.
-   *
-   * @param c character to quote
-   * @return quoted version of c
-   * @deprecated use {@link #escapeJava(String)} or {@link #charLiteral(char)}
-   */
-  @Deprecated(since = "2021-03-14")
-  @SideEffectFree
-  public static String escapeJava(char c) {
-    return switch (c) {
-      case '\"' -> "\\\"";
-      case '\\' -> "\\\\";
-      case '\b' -> "\\b";
-      case '\f' -> "\\f";
-      case '\n' -> "\\n"; // '\n', not lineSep
-      case '\r' -> "\\r";
-      case '\t' -> "\\t";
-      default -> new String(new char[] {c});
-    };
-  }
-
-  /**
    * Given a character, returns a Java character literal denoting the character. The return value
    * begins and ends with a single quote mark.
    *
@@ -726,27 +689,6 @@ public final class StringsP {
   // //////////////////////////////////////////////////////////////////////
   // Whitespace
   //
-
-  /**
-   * Returns true if the string contains only white space codepoints, otherwise false.
-   *
-   * <p>In Java 11+, use {@code String.isBlank()} instead.
-   *
-   * @param s a string
-   * @return true if the string contains only white space codepoints, otherwise false
-   * @deprecated use {@code String.isBlank()}
-   */
-  @SuppressWarnings({
-    "allcheckers:purity.not.deterministic.call", // used for lookup, so order does not matter
-    "allcheckers:purity.not.deterministic.not.sideeffectfree.call", // side effect to local state
-    "allcheckers:purity.not.sideeffectfree.call", // side effect to local state
-    "lock:method.guarantee.violated" // side effect to local state
-  })
-  @Deprecated(since = "2026-03-05")
-  @Pure
-  public static boolean isBlank(String s) {
-    return s.chars().allMatch(Character::isWhitespace);
-  }
 
   /**
    * Remove all whitespace before or after instances of delimiter.
@@ -1013,49 +955,6 @@ public final class StringsP {
   //
 
   /**
-   * Same as built-in String comparison, but accept null arguments, and place them at the beginning.
-   *
-   * @deprecated use {@code Comparator.nullsFirst(Comparator.naturalOrder())}
-   */
-  @Deprecated(since = "2021-02-27")
-  public static class NullableStringComparator
-      implements Comparator<@Nullable String>, Serializable {
-    /** Unique identifier for serialization. If you add or remove fields, change this number. */
-    static final long serialVersionUID = 20150812L;
-
-    /** Create a new NullableStringComparator. */
-    @SideEffectFree
-    public NullableStringComparator() {}
-
-    /**
-     * Compare two Strings lexicographically. Null is considered less than any non-null String.
-     *
-     * @param s1 first string to compare
-     * @param s2 second string to compare
-     * @return a negative integer, zero, or a positive integer as the first argument is less than,
-     *     equal to, or greater than the second
-     */
-    @SuppressWarnings({
-      "ReferenceEquality",
-      "PMD.UseEqualsToCompareStrings"
-    }) // comparator method uses ==
-    @Pure
-    @Override
-    public int compare(@Nullable String s1, @Nullable String s2) {
-      if (s1 == s2) {
-        return 0;
-      }
-      if (s1 == null) {
-        return -1;
-      }
-      if (s2 == null) {
-        return 1;
-      }
-      return s1.compareTo(s2);
-    }
-  }
-
-  /**
    * Orders Objects according to their {@code toString()} representation. Null is considered less
    * than any non-null Object.
    *
@@ -1066,18 +965,13 @@ public final class StringsP {
    * <p>This cannot be replaced by {@code Comparator.nullsFirst(Comparator.naturalOrder())} because
    * {@code Object} is not {@code Comparable}.
    */
-  public static class ObjectComparator implements Comparator<@Nullable Object>, Serializable {
+  public static final class ObjectComparator implements Comparator<@Nullable Object>, Serializable {
 
     /** The canonical ObjectComparator. */
     public static final ObjectComparator it = new ObjectComparator();
 
-    /**
-     * Create a new ObjectComparator.
-     *
-     * @deprecated use {@link #it}.
-     */
-    @Deprecated(since = "2022-07-25") // to make private
-    public ObjectComparator() {}
+    /** Create a new ObjectComparator. Clients should use {@link #it}. */
+    private ObjectComparator() {}
 
     /** Unique identifier for serialization. If you add or remove fields, change this number. */
     static final long serialVersionUID = 20170420L;
@@ -1291,8 +1185,11 @@ public final class StringsP {
         return listToStringAndClass((List<? extends @PolyNull @Signed Object>) l);
       }
       if (v instanceof Map<?, ?> m) {
-        return mapToStringAndClass(
-            (Map<? extends @PolyNull @Signed Object, ? extends @PolyNull @Signed Object>) m);
+        @SuppressWarnings("keyfor:type.argument") // TODO
+        String result =
+            MapsP.mapToStringAndClassMultiLine(
+                (Map<? extends @PolyNull @Signed Object, ? extends @PolyNull @Signed Object>) m);
+        return result;
       }
     }
     try {
@@ -1389,76 +1286,9 @@ public final class StringsP {
         "Argument is not an array; its class is " + a.getClass().getName());
   }
 
-  //
-  // Diagnostic output
-  //
-
-  /**
-   * Convert a map to a string, printing the runtime class of keys and values.
-   *
-   * @param m a map
-   * @return a string representation of the map
-   * @deprecated use {@link CollectionsP#mapToStringAndClassMultiLine}
-   */
-  @SuppressWarnings({
-    "allcheckers:purity.not.sideeffectfree.call", // side effect to local state
-    "lock:method.guarantee.violated" // side effect to local state
-  })
-  @Deprecated(since = "2025-06-21")
-  @SideEffectFree
-  public static String mapToStringAndClass(
-      Map<? extends @Signed @PolyNull Object, ? extends @Signed @PolyNull Object> m) {
-    StringJoiner result = new StringJoiner(System.lineSeparator());
-    for (Map.Entry<? extends @Signed @PolyNull Object, ? extends @Signed @PolyNull Object> e :
-        m.entrySet()) {
-      result.add("  " + toStringAndClass(e.getKey()) + " => " + toStringAndClass(e.getValue()));
-    }
-    return result.toString();
-  }
-
-  /**
-   * Convert a map to a string, printing each key-value pair on its own line, with no indentation.
-   *
-   * @param m a map
-   * @return a string representation of the map
-   * @deprecated use {@link CollectionsP#mapToStringAndClassMultiLine}
-   */
-  @SuppressWarnings({
-    "allcheckers:purity.not.sideeffectfree.call", // side effect to local state
-    "lock:method.guarantee.violated" // side effect to local state
-  })
-  @Deprecated(since = "2025-06-21")
-  @SideEffectFree
-  public static String mapToStringLinewise(
-      Map<? extends @Signed @PolyNull Object, ? extends @Signed @PolyNull Object> m) {
-    StringJoiner result = new StringJoiner(System.lineSeparator());
-    for (Map.Entry<? extends @Signed @PolyNull Object, ? extends @Signed @PolyNull Object> e :
-        m.entrySet()) {
-      result.add(e.getKey() + " => " + e.getValue());
-    }
-    return result.toString();
-  }
-
   // //////////////////////////////////////////////////////////////////////
   // English text
   //
-
-  /**
-   * Returns either "n <em>noun</em>" or "n <em>noun</em>s" depending on n. Adds "es" to words
-   * ending with "ch", "s", "sh", or "x", adds "ies" to words ending with "y" when the previous
-   * letter is a consonant.
-   *
-   * @param n count of nouns
-   * @param noun word being counted; must not be the empty string
-   * @return {@code noun}, if n==1; otherwise, pluralization of {@code noun}
-   * @throws IllegalArgumentException if the length of {@code noun} is 0
-   * @deprecated use {@link #nPlural(int, String)}
-   */
-  @Deprecated(since = "2025-07-16")
-  @SideEffectFree
-  public static String nplural(int n, String noun) {
-    return nPlural(n, noun);
-  }
 
   /** Exceptions to the usual English noun pluralization rules. */
   private static final Map<String, String> nPluralExceptions = new HashMap<>();

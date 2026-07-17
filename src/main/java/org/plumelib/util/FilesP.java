@@ -188,40 +188,6 @@ public final class FilesP {
    * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
    * files) after the first gzipped file.
    *
-   * @param path the possibly-compressed file to read
-   * @param charsetName the name of a Charset to use when reading the file, or null to use UTF-8
-   * @return an InputStreamReader for file
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   * @deprecated use {@link #newFileReader(Path,Charset)}
-   */
-  @Deprecated(since = "2026-03-05")
-  @SuppressWarnings({
-    "allcheckers:purity.not.sideeffectfree.call", // needs JDK annotations
-    "JdkObsolete", // this method is deprecated
-  })
-  @SideEffectFree
-  @Owning
-  public static InputStreamReader newFileReader(Path path, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    InputStream in = newFileInputStream(path.toFile());
-    InputStreamReader fileReader;
-    if (charsetName == null) {
-      fileReader = new InputStreamReader(in, UTF_8);
-    } else {
-      fileReader = new InputStreamReader(in, charsetName);
-    }
-    return fileReader;
-  }
-
-  /**
-   * Returns a Reader for the file, accounting for the possibility that the file is compressed. (A
-   * file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
    * @param file the possibly-compressed file to read
    * @return an InputStreamReader for file
    * @throws FileNotFoundException if the file cannot be found
@@ -253,28 +219,6 @@ public final class FilesP {
   public static InputStreamReader newFileReader(File file, @Nullable Charset charset)
       throws FileNotFoundException, IOException {
     return newFileReader(file.toPath(), charset);
-  }
-
-  /**
-   * Returns a Reader for the file, accounting for the possibility that the file is compressed. (A
-   * file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
-   * @param file the possibly-compressed file to read
-   * @param charsetName the name of a Charset to use when reading the file, or null to use UTF-8
-   * @return an InputStreamReader for file
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   */
-  @Deprecated(since = "2026-03-05")
-  @SideEffectFree
-  @Owning
-  public static InputStreamReader newFileReader(File file, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    return newFileReader(file.toPath(), charsetName);
   }
 
   // //////////////////////////////////////////////////////////////////////
@@ -350,29 +294,6 @@ public final class FilesP {
    * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
    * files) after the first gzipped file.
    *
-   * @param filename the possibly-compressed file to read
-   * @param charsetName the character set to use when reading the file, or null to use UTF-8
-   * @return a BufferedReader for filename
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   * @deprecated use {@link #newBufferedFileReader(String,Charset)}
-   */
-  @Deprecated(since = "2026-03-05")
-  @SideEffectFree
-  @Owning
-  public static BufferedReader newBufferedFileReader(String filename, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    return newBufferedFileReader(new File(filename), charsetName);
-  }
-
-  /**
-   * Returns a BufferedReader for the file, accounting for the possibility that the file is
-   * compressed. (A file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
    * @param file the possibly-compressed file to read
    * @param charset the character set to use when reading the file, or null to use UTF-8
    * @return a BufferedReader for file
@@ -385,31 +306,6 @@ public final class FilesP {
   public static BufferedReader newBufferedFileReader(File file, @Nullable Charset charset)
       throws FileNotFoundException, IOException {
     Reader fileReader = newFileReader(file, charset);
-    return new BufferedReader(fileReader);
-  }
-
-  /**
-   * Returns a BufferedReader for the file, accounting for the possibility that the file is
-   * compressed. (A file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
-   * @param file the possibly-compressed file to read
-   * @param charsetName the character set to use when reading the file, or null to use UTF-8
-   * @return a BufferedReader for file
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   * @deprecated use {@link #newBufferedFileReader(File,Charset)}
-   */
-  @Deprecated(since = "2026-03-05")
-  @SuppressWarnings("allcheckers:purity.not.sideeffectfree.call") // needs JDK annotations
-  @SideEffectFree
-  @Owning
-  public static BufferedReader newBufferedFileReader(File file, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    Reader fileReader = newFileReader(file, charsetName);
     return new BufferedReader(fileReader);
   }
 
@@ -613,40 +509,6 @@ public final class FilesP {
    * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
    * files) after the first gzipped file.
    *
-   * @param path the possibly-compressed file to read
-   * @param charsetName the name of a Charset to use when reading the file, or null to use UTF-8
-   * @return an OutputStreamWriter for file
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   * @deprecated use {@link newFileWriter(Path,Charset)}
-   */
-  @Deprecated(since = "2026-03-05")
-  @SuppressWarnings({
-    "allcheckers:purity.not.sideeffectfree.call", // needs JDK annotations
-    "JdkObsolete", // this method is deprecated
-  })
-  @SideEffectFree
-  @Owning
-  public static OutputStreamWriter newFileWriter(Path path, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    OutputStream in = newFileOutputStream(path.toFile());
-    OutputStreamWriter fileWriter;
-    if (charsetName == null) {
-      fileWriter = new OutputStreamWriter(in, UTF_8);
-    } else {
-      fileWriter = new OutputStreamWriter(in, charsetName);
-    }
-    return fileWriter;
-  }
-
-  /**
-   * Returns a Writer for the file, accounting for the possibility that the file is compressed. (A
-   * file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
    * @param file the possibly-compressed file to read
    * @return an OutputStreamWriter for file
    * @throws FileNotFoundException if the file cannot be found
@@ -678,29 +540,6 @@ public final class FilesP {
   public static OutputStreamWriter newFileWriter(File file, @Nullable Charset charset)
       throws FileNotFoundException, IOException {
     return newFileWriter(file.toPath(), charset);
-  }
-
-  /**
-   * Returns a Writer for the file, accounting for the possibility that the file is compressed. (A
-   * file whose name ends with ".gz" is treated as compressed.)
-   *
-   * <p>Warning: The "gzip" program writes and reads files containing concatenated gzip files. As of
-   * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
-   * files) after the first gzipped file.
-   *
-   * @param file the possibly-compressed file to read
-   * @param charsetName the name of a Charset to use when reading the file, or null to use UTF-8
-   * @return an OutputStreamWriter for file
-   * @throws FileNotFoundException if the file cannot be found
-   * @throws IOException if there is trouble reading the file
-   * @deprecated use {@link #newFileWriter(File,Charset)}
-   */
-  @Deprecated(since = "2026-03-05")
-  @SideEffectFree
-  @Owning
-  public static OutputStreamWriter newFileWriter(File file, @Nullable String charsetName)
-      throws FileNotFoundException, IOException {
-    return newFileWriter(file.toPath(), charsetName);
   }
 
   // //////////////////////////////////////////////////////////////////////
@@ -1287,25 +1126,6 @@ public final class FilesP {
   }
 
   /**
-   * Reads the entire contents of the file and returns it as a string. Any IOException encountered
-   * will be turned into an Error.
-   *
-   * <p>You could use {@code new String(Files.readAllBytes(...))}, but it requires a Path rather
-   * than a File, and it can throw IOException which has to be caught.
-   *
-   * @param file the file to read
-   * @return the entire contents of the reader, as a string
-   * @deprecated use {@link #readString}
-   */
-  // @InlineMe(replacement = "FilesP.fileContents(file)", imports =
-  // "org.plumelib.util.FilesP")
-  @Deprecated(since = "2023-03-02")
-  @SideEffectFree
-  public static String readFile(File file) {
-    return fileContents(file);
-  }
-
-  /**
    * Reads the entire contents of the file and returns it as a string.
    *
    * <p>The point of this method is that it does not throw any checked exception: any IOException
@@ -1337,41 +1157,6 @@ public final class FilesP {
   @SideEffectFree
   public static List<String> readLinesRetainingSeparators(Path path) {
     return StringsP.splitLinesRetainSeparators(readString(path));
-  }
-
-  /**
-   * Reads the entire contents of the file and returns it as a string.
-   *
-   * <p>The point of this method is that it does not throw any checked exception: any IOException
-   * encountered will be turned into an Error.
-   *
-   * <p>You could use {@code new String(Files.readAllBytes(...))}, but it requires a Path rather
-   * than a File, and it can throw IOException which has to be caught.
-   *
-   * @param file the file to read
-   * @return the entire contents of the reader, as a string
-   * @deprecated use {@link #readString}
-   */
-  @Deprecated(since = "2024-04-14")
-  @SideEffectFree
-  public static String fileContents(File file) {
-    return readString(file.toPath());
-  }
-
-  /**
-   * Creates a file with the given name and writes the specified string to it. If the file currently
-   * exists (and is writable) it is overwritten.
-   *
-   * <p>The point of this method is that it does not throw any checked exception: any IOException
-   * encountered will be turned into an Error.
-   *
-   * @param file the file to write to
-   * @param contents the text to put in the file
-   * @deprecated use {@link #writeString(File, String)}
-   */
-  @Deprecated(since = "2024-04-16")
-  public static void writeFile(File file, String contents) {
-    writeString(file.toPath(), contents);
   }
 
   /**
