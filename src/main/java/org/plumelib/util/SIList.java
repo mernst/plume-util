@@ -655,7 +655,8 @@ public abstract class SIList<E> implements Iterable<E>, Serializable {
       this.delegate = delegate;
       this.fromIndex = fromIndex;
       this.toIndex = toIndex;
-      checkRange(fromIndex, toIndex);
+      // Validate against the delegate's size, not this sublist's own (smaller) size.
+      delegate.checkRange(fromIndex, toIndex);
     }
 
     @Override

@@ -5,6 +5,7 @@ package org.plumelib.util;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -120,7 +121,7 @@ public final class FilesP {
    * files) after the first gzipped file.
    *
    * @param filename the possibly-compressed file to read
-   * @return an InputStream for filename
+   * @return an InputStreamReader for filename
    * @throws IOException if there is trouble reading the file
    * @throws FileNotFoundException if the file is not found
    */
@@ -400,7 +401,7 @@ public final class FilesP {
         in = new GZIPOutputStream(fis);
       } catch (IOException e) {
         fis.close();
-        throw new IOException("Problem while reading " + path, e);
+        throw new IOException("Problem while writing " + path, e);
       }
     } else {
       in = fis;
@@ -408,8 +409,8 @@ public final class FilesP {
     return in;
   }
 
-  /** An array of options that includes only APPEND. */
-  private static final StandardOpenOption[] APPEND_OPTIONS = {APPEND};
+  /** An array of options that is equivalent to only APPEND. */
+  private static final StandardOpenOption[] APPEND_OPTIONS = {CREATE, APPEND};
 
   /** An empty array of options. */
   private static final StandardOpenOption[] EMPTY_OPTIONS = new StandardOpenOption[0];
@@ -440,8 +441,8 @@ public final class FilesP {
    * Java 1.4, Java reads just the first one: it silently discards all characters (including gzipped
    * files) after the first gzipped file.
    *
-   * @param filename the possibly-compressed file to read
-   * @return an OutputStream for filename
+   * @param filename the possibly-compressed file to write
+   * @return an OutputStreamWriter for filename
    * @throws IOException if there is trouble reading the file
    * @throws FileNotFoundException if the file is not found
    */
@@ -593,7 +594,9 @@ public final class FilesP {
       return Files.newBufferedWriter(
           Paths.get(filename),
           UTF_8,
-          append ? new StandardOpenOption[] {CREATE, APPEND} : new StandardOpenOption[] {CREATE});
+          append
+              ? new StandardOpenOption[] {CREATE, APPEND}
+              : new StandardOpenOption[] {CREATE, TRUNCATE_EXISTING});
     }
   }
 
@@ -1264,13 +1267,13 @@ public final class FilesP {
   }
 
   /**
-   * Returns true if the first {@code readLimit} bytes of the input stream consist only of
+   * Returns true if the first {@code readLimit} code points of the input stream consist only of
    * whitespace.
    *
    * @param is an input stream
-   * @param readLimit how many bytes to look ahead in the input stream
+   * @param readLimit how many code points to look ahead in the input stream
    * @return null if {@code !is.markSupported()}; otherwise, true if the first {@code readLimit}
-   *     characters of the input stream consist only of whitespace
+   *     code points of the input stream consist only of whitespace
    */
   public static @Nullable Boolean isWhitespaceOnly(InputStream is, @Positive int readLimit) {
     if (!is.markSupported()) {
@@ -1318,15 +1321,22 @@ public final class FilesP {
       }
       byte[] utf8Bytes = new byte[byteCount];
       utf8Bytes[0] = (byte) nextByte;
+      int bytesRead = 1;
       for (int i = 1; i < byteCount; i++) { // Get any subsequent bytes for this UTF-8 character.
         nextByte = is.read();
+        if (nextByte == -1) {
+          // The stream ended in the middle of a multi-byte character; decode what was read.
+          break;
+        }
         utf8Bytes[i] = (byte) nextByte;
+        bytesRead++;
       }
-      @SuppressWarnings(
-          "PMD.UnnecessaryFullyQualifiedName" // Cannot use just `StandardCharsets.UTF_8` because of
-      // Index Checker dependent types.
-      )
-      int codePoint = new String(utf8Bytes, StandardCharsets.UTF_8).codePointAt(0);
+      @SuppressWarnings({
+        "PMD.UnnecessaryFullyQualifiedName", // Cannot use just `StandardCharsets.UTF_8` because of
+        // Index Checker dependent types.
+        "index:argument" // bytesRead <= byteCount == utf8Bytes.length
+      })
+      int codePoint = new String(utf8Bytes, 0, bytesRead, StandardCharsets.UTF_8).codePointAt(0);
       return codePoint;
     } catch (IOException e) {
       throw new UncheckedIOException("input stream = " + is, e);

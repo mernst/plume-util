@@ -330,6 +330,10 @@ final class MathPTest {
 
     void checkStrict(long[] nums, long @Nullable @ArrayLen(2) [] goalRm) {
       long[] rm = MathP.modulusStrictLong(Arrays.stream(nums).iterator(), false);
+      // The array-based overload must agree with the iterator-based overload.  (In particular, a
+      // constant array such as {5,5,5,5,5} must return null rather than dividing by a zero
+      // modulus.)
+      assertArraysEquals(rm, MathP.modulusStrict(nums.clone(), false));
       if (goalRm == null) {
         assertNull(rm);
       } else {

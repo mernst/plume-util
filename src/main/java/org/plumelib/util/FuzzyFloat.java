@@ -14,11 +14,19 @@ import org.checkerframework.dataflow.qual.Pure;
  * <p>Floating-point numbers are compared for equality by dividing them by one another and comparing
  * the ratio. By default, they must be within 0.0001 (0.01%) to be considered equal.
  *
- * <p>Zero is never considered equal to a non-zero number, no matter how small its value.
+ * <p>Zero is considered equal to a non-zero number only if the non-zero number's magnitude is less
+ * than the square of the fuzzy ratio.
  *
  * <p>Two NaN floats are not considered equal (consistent with the == operator).
  */
-public class FuzzyFloat {
+public class FuzzyFloat implements Serializable {
+
+  /**
+   * This class is serializable so that its non-static inner class {@link
+   * DoubleArrayComparatorLexical}, which holds an implicit reference to the enclosing FuzzyFloat,
+   * can be serialized.
+   */
+  static final long serialVersionUID = 20250723L;
 
   /** Default relative difference between two values such that this class considers them equal. */
   static final double DEFAULT_RELATIVE_RATIO = .0001;

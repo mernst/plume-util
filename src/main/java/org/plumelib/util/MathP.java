@@ -928,7 +928,7 @@ public final class MathP {
     }
 
     int modulus = nums[firstIndex + 1] - nums[firstIndex];
-    if (modulus == 1) {
+    if (modulus == 1 || modulus == 0) {
       return null;
     }
     for (int i = firstIndex + 2; i <= lastIndex; i++) {
@@ -982,7 +982,7 @@ public final class MathP {
     }
     int next = itor.next();
     int modulus = next - prev;
-    if (modulus == 1) {
+    if (modulus == 1 || modulus == 0) {
       return null;
     }
     int count = 2;
@@ -1003,7 +1003,9 @@ public final class MathP {
       return null;
     }
 
-    int r = modNonnegative(next, modulus);
+    // Use `prev`, a strict element: when `nonstrictEnds`, the loop broke with `next` holding the
+    // (nonstrict) last endpoint, which is the element to check, not the one that defines r.
+    int r = modNonnegative(prev, modulus);
     if (nonstrictEnds) {
       if ((r != modNonnegative(firstNonstrict, modulus))
           || (r != modNonnegative(lastNonstrict, modulus))) {
@@ -1153,7 +1155,7 @@ public final class MathP {
     }
 
     long modulus = nums[firstIndex + 1] - nums[firstIndex];
-    if (modulus == 1) {
+    if (modulus == 1 || modulus == 0) {
       return null;
     }
     for (int i = firstIndex + 2; i <= lastIndex; i++) {
@@ -1184,7 +1186,7 @@ public final class MathP {
    * @param nonstrictEnds true if endpoints are NOT subject to the strict density requirement
    * @return an array of two integers (r,m) such that each number in NUMS is equal to r (mod m), or
    *     null if no such exists or the iterator contains fewer than 3 elements
-   * @see #modulusStrict(int[], boolean)
+   * @see #modulusStrict(long[], boolean)
    */
   public static long @Nullable @ArrayLen(2) [] modulusStrictLong(
       Iterator<Long> itor, boolean nonstrictEnds) {
@@ -1236,7 +1238,9 @@ public final class MathP {
       return null;
     }
 
-    long r = modNonnegative(next, modulus);
+    // Use `prev`, a strict element: when `nonstrictEnds`, the loop broke with `next` holding the
+    // (nonstrict) last endpoint, which is the element to check, not the one that defines r.
+    long r = modNonnegative(prev, modulus);
     if (nonstrictEnds) {
       if ((r != modNonnegative(firstNonstrict, modulus))
           || (r != modNonnegative(lastNonstrict, modulus))) {
