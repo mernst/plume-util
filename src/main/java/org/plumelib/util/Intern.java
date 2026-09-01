@@ -250,7 +250,6 @@ public final class Intern {
       return true;
     }
 
-    @SuppressWarnings("PMD.AvoidReassigningLoopVariables") // PMD is broken: elt isn't control var
     @Override
     public int hashCode(@UnknownSignedness Object o) {
       double[] a = (double[]) o;
