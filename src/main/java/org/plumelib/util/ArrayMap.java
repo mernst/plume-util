@@ -461,6 +461,7 @@ public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSig
 
   // Bulk Operations
 
+  @SuppressWarnings("allcheckers:purity.unknown.sideeffectsonly") // TEMPORARY, for @SideEffectsOnly
   @Override
   public void putAll(Map<? extends K, ? extends V> m) {
     if (m.isEmpty()) {
@@ -512,6 +513,7 @@ public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSig
       return ArrayMap.this.size();
     }
 
+    @SuppressWarnings("allcheckers:purity.unknown.sideeffectsonly") // TEMPORARY: @SideEffectsOnly
     @Override
     public final void clear() {
       ArrayMap.this.clear();
@@ -609,6 +611,7 @@ public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSig
       return ArrayMap.this.size();
     }
 
+    @SuppressWarnings("allcheckers:purity.unknown.sideeffectsonly") // TEMPORARY: @SideEffectsOnly
     @Override
     public final void clear() {
       ArrayMap.this.clear();
@@ -700,6 +703,7 @@ public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSig
       return ArrayMap.this.size();
     }
 
+    @SuppressWarnings("allcheckers:purity.unknown.sideeffectsonly") // TEMPORARY: @SideEffectsOnly
     @Override
     public final void clear() {
       ArrayMap.this.clear();
@@ -722,6 +726,7 @@ public class ArrayMap<K extends @UnknownSignedness Object, V extends @UnknownSig
       return containsEntry(key, value);
     }
 
+    @SuppressWarnings("allcheckers:purity.unknown.sideeffectsonly") // TEMPORARY: @SideEffectsOnly
     @Override
     public final boolean remove(@GuardSatisfied @Nullable @UnknownSignedness Object o) {
       if (o instanceof Map.Entry) {
