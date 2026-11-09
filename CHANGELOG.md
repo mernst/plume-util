@@ -27,12 +27,17 @@
   possible, keeping the replaced file's owner, group, and POSIX permissions
   where possible.
 - `StringsP.toStringAndClass()`, `StringsP.listToStringAndClass()`,
-  `StringsP.listToString()`, and `MapsP.mapToStringAndClassMultiLine()` do not
-  throw when printing a value throws, unless the JVM is broken or out of
-  resources, as for `OutOfMemoryError`.  Formerly, they threw if a `toString()`
-  threw an `Error`, such as `StackOverflowError`, or if iterating over a list's
-  or map's elements threw.  Their message for a failure includes the thrown
-  throwable's `toString()`, which contains its class and message.
+  `StringsP.listToString()`, `StringsP.arrayToStringAndClass()`, and
+  `MapsP.mapToStringAndClassMultiLine()` do not throw when printing a value
+  throws, unless the JVM is broken or out of resources, as for
+  `OutOfMemoryError`, or a class could not be loaded or initialized, as for
+  `NoClassDefFoundError`.  Formerly, they threw if a `toString()` threw an
+  `Error`, such as `StackOverflowError`, or if iterating over a list's or map's
+  elements threw.  Their message for a failure includes the thrown throwable's
+  `toString()`, which contains its class and message.
+  `StringsP.arrayToStringAndClass()` reports a failure as
+  "exception_when_printing_elements [CLASS]: THROWABLE" rather than as
+  "exception_when_printing_array [CLASS]".
 - `StringsP.toStringAndClass()` changes:
   - If a value's `toString()` calls `toStringAndClass()` on the same value,
     directly or via other values, the inner call returns
@@ -41,6 +46,9 @@
     map's class, and an empty map is printed as "{} [CLASS]".
   - With `shallow` true, an array of primitives is printed as its elements
     rather than as an identity hash code such as `[I@1b6d3586`.
+- `StringsP.arrayToStringAndClass()` escapes the elements of a `char[]`, as
+  `StringsP.toStringAndClass()` escapes the result of a `toString()`, so that
+  the result contains no line break.
 - `MapsP.mapToStringAndClassMultiLine()` prints each key and value shallowly:
   it prints a key or value that is a list, a map, or an array of objects using
   its own `toString()`, rather than showing each element and its class.

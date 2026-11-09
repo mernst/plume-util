@@ -425,8 +425,9 @@ public final class MapsP {
    * Convert a map to a multi-line string representation, which includes the runtime class of keys
    * and values. The last line does not end with a line separator.
    *
-   * <p>Each line has the form "{key} [{key.getClass()}] =&gt; {value} [{value.getClass()}]", where
-   * the "{}" characters indicate interpolation and the "[]" characters are literally present.
+   * <p>The result is the same as that of {@link #mapToStringAndClassMultiLine(Map, String)} with an
+   * empty line prefix; see that method for the format and for what happens if printing the map
+   * throws.
    *
    * @param <K> type of map keys
    * @param <V> type of map values
@@ -449,7 +450,7 @@ public final class MapsP {
    *
    * <p>Like {@link StringsP#toStringAndClass(Object)}, this method does not throw even if printing
    * the map throws, except that it rethrows a {@link VirtualMachineError} other than {@link
-   * StackOverflowError}. If iterating over the map throws, the result is
+   * StackOverflowError} or a {@link LinkageError}. If iterating over the map throws, the result is
    * "{linePrefix}exception_when_printing_elements [{m.getClass()}]: {throwable}".
    *
    * @param <K> type of map keys
@@ -461,10 +462,13 @@ public final class MapsP {
   @SideEffectFree
   public static <K extends @Signed @Nullable Object, V extends @Signed @Nullable Object>
       String mapToStringAndClassMultiLine(Map<K, V> m, String linePrefix) {
-    return StringsP.printSafely(
-        () -> entriesToString(m, linePrefix),
-        m.getClass(),
-        linePrefix + "exception_when_printing_elements");
+    return StringsP.printUnlessCyclic(
+        m,
+        () ->
+            StringsP.printSafely(
+                () -> entriesToString(m, linePrefix),
+                m.getClass(),
+                linePrefix + "exception_when_printing_elements"));
   }
 
   /**

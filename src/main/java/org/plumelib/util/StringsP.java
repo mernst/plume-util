@@ -1262,7 +1262,7 @@ public final class StringsP {
    * list, or map along with the element's class; to use the {@code toString()} of a list, a map, or
    * an array of objects instead, pass true to {@link #toStringAndClass(Object, boolean)}. Like that
    * method, this method does not throw even if printing the value throws, except that it rethrows a
-   * {@link VirtualMachineError} other than {@link StackOverflowError}.
+   * {@link VirtualMachineError} other than {@link StackOverflowError} or a {@link LinkageError}.
    *
    * @param v a value; may be null
    * @return the value's toString and its class
@@ -1294,28 +1294,25 @@ public final class StringsP {
    * values, then the inner call returns "cyclic_reference [CLASS]".
    *
    * <p>This method does not throw when printing the value throws, unless the JVM is broken or out
-   * of resources other than stack: it rethrows a {@link VirtualMachineError} other than {@link
-   * StackOverflowError}, such as {@link OutOfMemoryError}. It can also throw {@code
-   * StackOverflowError} if it is called when the stack is nearly exhausted. If calling {@code
-   * toString()} on the value or on one of its elements throws, then the text for that value or
-   * element is "exception_when_calling_toString [CLASS]: THROWABLE", where THROWABLE is the result
-   * of {@code toString()} on the thrown throwable, as in "exception_when_calling_toString [class
-   * java.util.ArrayList]: java.lang.StackOverflowError" for a list that contains itself indirectly.
-   * If iterating over the elements of a list or map throws, as when iteration throws {@code
-   * ConcurrentModificationException}, the result is "exception_when_printing_elements [CLASS]:
-   * THROWABLE". If the stack is too nearly exhausted to describe the failure, or if {@code
-   * toString()} on the thrown throwable throws, the text is just "exception_when_calling_toString"
-   * or "exception_when_printing_elements".
+   * of resources other than stack or a class could not be loaded or initialized: it rethrows a
+   * {@link VirtualMachineError} other than {@link StackOverflowError}, such as {@link
+   * OutOfMemoryError}, and a {@link LinkageError}, such as {@link NoClassDefFoundError}. It can
+   * also throw {@code StackOverflowError} if it is called when the stack is nearly exhausted. If
+   * calling {@code toString()} on the value or on one of its elements throws, then the text for
+   * that value or element is "exception_when_calling_toString [CLASS]: THROWABLE", where THROWABLE
+   * is the result of {@code toString()} on the thrown throwable, as in
+   * "exception_when_calling_toString [class java.util.ArrayList]: java.lang.StackOverflowError" for
+   * a list that contains itself indirectly. If iterating over the elements of a list or map throws,
+   * as when iteration throws {@code ConcurrentModificationException}, the result is
+   * "exception_when_printing_elements [CLASS]: THROWABLE". If the stack is too nearly exhausted to
+   * describe the failure, or if {@code toString()} on the thrown throwable throws, the text is just
+   * "exception_when_calling_toString" or "exception_when_printing_elements".
    *
    * @param v a value; may be null
    * @param shallow true if the result uses the value's own {@code toString()}, rather than showing
    *     each element and its class, for a list, a map, or an array of objects
    * @return the value's toString and its class
    */
-  @SuppressWarnings({
-    "allcheckers:purity", // side effect to valuesBeingPrinted, which is restored before returning
-    "lock:method.guarantee.violated" // side effect to valuesBeingPrinted
-  })
   @SideEffectFree
   public static String toStringAndClass(@Nullable Object v, boolean shallow) {
     if (v == null) {
@@ -1329,15 +1326,34 @@ public final class StringsP {
       // An array of primitives cannot contain a cycle, and its toString() shows no elements.
       return arrayToStringAndClass(v);
     }
+    return printUnlessCyclic(v, () -> toStringAndClassNoCycle(v, vClass, shallow));
+  }
+
+  /**
+   * Returns the result of the given printer, or "cyclic_reference [CLASS]" if the value is already
+   * being printed on the current thread, that is, if a call to this method on the value is in
+   * progress on the current thread. While the printer runs, the value counts as being printed.
+   *
+   * @param v a value
+   * @param printer a computation that returns a string representation of the value
+   * @return the printer's result, or "cyclic_reference [CLASS]" if the value is already being
+   *     printed
+   */
+  @SuppressWarnings({
+    "allcheckers:purity", // side effect to valuesBeingPrinted, which is restored before returning
+    "lock:method.guarantee.violated" // side effect to valuesBeingPrinted
+  })
+  @SideEffectFree
+  static String printUnlessCyclic(Object v, Supplier<String> printer) {
     @SuppressWarnings("nullness:assignment") // withInitial() makes get() return non-null
     @NonNull @Modifiable @IteratorPolyMod List<Object> beingPrinted = valuesBeingPrinted.get();
     if (containsIdentical(beingPrinted, v)) {
-      return "cyclic_reference [" + vClass + "]";
+      return "cyclic_reference [" + v.getClass() + "]";
     }
     int numBeingPrinted = beingPrinted.size();
     beingPrinted.add(v);
     try {
-      return toStringAndClassNoCycle(v, vClass, shallow);
+      return printer.get();
     } finally {
       // Remove v, and also any value that a nested call did not remove because its finally block
       // threw StackOverflowError.
@@ -1383,8 +1399,11 @@ public final class StringsP {
   private static String toStringAndClassNoCycle(Object v, Class<?> vClass, boolean shallow) {
     if (!shallow) {
       // Printing an element calls toStringAndClass, which does not throw.
-      if (vClass.isArray()) {
-        return arrayToStringAndClass(v);
+      if (v instanceof Object[] oa) {
+        return printSafely(
+            () -> elementsToString(Arrays.asList(oa)) + " [" + vClass + "]",
+            vClass,
+            "exception_when_printing_elements");
       }
       if (v instanceof List<?> l) {
         return printSafely(
@@ -1430,10 +1449,11 @@ public final class StringsP {
    * FAILURELABEL.
    *
    * <p>This method does not throw, except that it rethrows a {@link VirtualMachineError} other than
-   * {@link StackOverflowError}, such as {@link OutOfMemoryError}. Such an error means that the JVM
-   * is broken or out of resources, so a caller should not catch it. A {@code StackOverflowError} is
-   * not rethrown, because {@code toString()} throws it for a collection that contains itself
-   * indirectly.
+   * {@link StackOverflowError}, such as {@link OutOfMemoryError}, and a {@link LinkageError}, such
+   * as {@link NoClassDefFoundError}. Such an error means that the JVM is broken or out of resources
+   * or that a class could not be loaded or initialized, so a caller should not catch it. A {@code
+   * StackOverflowError} is not rethrown, because {@code toString()} throws it for a collection that
+   * contains itself indirectly.
    *
    * @param printer a computation that returns a string representation of a value
    * @param vClass the class of the value that the printer prints; used for diagnostics
@@ -1454,7 +1474,7 @@ public final class StringsP {
       return printer.get();
     } catch (StackOverflowError e) {
       thrown = e;
-    } catch (VirtualMachineError e) {
+    } catch (VirtualMachineError | LinkageError e) {
       throw e;
     } catch (Throwable e) {
       thrown = e;
@@ -1463,7 +1483,7 @@ public final class StringsP {
       return String.format("%s [%s]: %s", failureLabel, vClass, escapeJava(thrown.toString()));
     } catch (StackOverflowError e) {
       return failureLabel;
-    } catch (VirtualMachineError e) {
+    } catch (VirtualMachineError | LinkageError e) {
       throw e;
     } catch (Throwable e) {
       return failureLabel;
@@ -1473,7 +1493,8 @@ public final class StringsP {
   /**
    * Returns a string representation of the list and its class. Intended for debugging. Like {@link
    * #toStringAndClass(Object)}, this method does not throw even if printing the list throws, except
-   * that it rethrows a {@link VirtualMachineError} other than {@link StackOverflowError}.
+   * that it rethrows a {@link VirtualMachineError} other than {@link StackOverflowError} or a
+   * {@link LinkageError}.
    *
    * @param lst a value; may be null
    * @return the value's toString and its class
@@ -1488,7 +1509,7 @@ public final class StringsP {
    * Returns a string representation of each element of the list and its class, but not the class of
    * the list itself. Like {@link #toStringAndClass(Object)}, this method does not throw even if
    * printing the list throws, except that it rethrows a {@link VirtualMachineError} other than
-   * {@link StackOverflowError}.
+   * {@link StackOverflowError} or a {@link LinkageError}.
    *
    * @param lst a list; may be null
    * @return a string representation of each element and its class
@@ -1498,8 +1519,11 @@ public final class StringsP {
     if (lst == null) {
       return "null";
     }
-    return printSafely(
-        () -> elementsToString(lst), lst.getClass(), "exception_when_printing_elements");
+    return printUnlessCyclic(
+        lst,
+        () ->
+            printSafely(
+                () -> elementsToString(lst), lst.getClass(), "exception_when_printing_elements"));
   }
 
   /**
@@ -1524,11 +1548,15 @@ public final class StringsP {
   }
 
   /**
-   * Returns a string representation of the contents of the specified array. The argument must be an
-   * array or null. This just dispatches one of the 9 overloaded versions of {@code
-   * java.util.Arrays.toString()}.
+   * Returns a string representation of the elements of the specified array and its class, as in
+   * "[1, 2] [class [I]". For an array of objects, the result is the same as that of {@link
+   * #toStringAndClass(Object)}, which shows each element and its class. Like {@link
+   * #toStringAndClass(Object)}, this method does not throw even if printing the array throws,
+   * except that it rethrows a {@link VirtualMachineError} other than {@link StackOverflowError} or
+   * a {@link LinkageError}, and except that it throws {@code IllegalArgumentException} if its
+   * argument is not an array.
    *
-   * @param a an array
+   * @param a an array, or null
    * @return a string representation of the array
    * @throws IllegalArgumentException if a is not an array
    */
@@ -1545,7 +1573,7 @@ public final class StringsP {
     } else if (a instanceof byte[] ba) {
       return Arrays.toString(ba) + theClass;
     } else if (a instanceof char[] ca) {
-      return Arrays.toString(ca) + theClass;
+      return escapeJava(Arrays.toString(ca)) + theClass;
     } else if (a instanceof double[] da) {
       return Arrays.toString(da) + theClass;
     } else if (a instanceof float[] fa) {
@@ -1558,11 +1586,8 @@ public final class StringsP {
       return Arrays.toString(sa) + theClass;
     }
 
-    if (a instanceof Object[] oa) {
-      return printSafely(
-          () -> elementsToString(Arrays.asList(oa)) + theClass,
-          a.getClass(),
-          "exception_when_printing_elements");
+    if (a instanceof Object[]) {
+      return toStringAndClass(a);
     }
 
     throw new IllegalArgumentException(

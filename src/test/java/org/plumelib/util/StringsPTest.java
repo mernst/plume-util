@@ -557,6 +557,15 @@ final class StringsPTest {
     }
   }
 
+  /** A class whose {@code toString()} throws {@code NoClassDefFoundError}. */
+  static class ToStringThrowsLinkageError {
+    @SideEffectFree
+    @Override
+    public String toString(@GuardSatisfied ToStringThrowsLinkageError this) {
+      throw new NoClassDefFoundError();
+    }
+  }
+
   /** A class whose {@code toString()} returns null. */
   static class ToStringReturnsNull {
     @SuppressWarnings({
@@ -637,6 +646,9 @@ final class StringsPTest {
     assertThrows(
         OutOfMemoryError.class,
         () -> StringsP.toStringAndClass(Arrays.asList(new ToStringThrowsOutOfMemoryError())));
+    assertThrows(
+        NoClassDefFoundError.class,
+        () -> StringsP.toStringAndClass(new ToStringThrowsLinkageError()));
 
     // A toString() that calls toStringAndClass on its receiver.
     assertEquals(
@@ -656,6 +668,7 @@ final class StringsPTest {
             + "} [class java.util.TreeMap]",
         StringsP.toStringAndClass(new TreeMap<>(Map.of("k", new int[] {1, 2}))));
     assertEquals("[1, 2] [class [I]", StringsP.toStringAndClass(new int[] {1, 2}, true));
+    assertEquals("[a, \\n, b] [class [C]", StringsP.toStringAndClass(new char[] {'a', '\n', 'b'}));
 
     // A map that contains itself directly.
     Map<String, Object> selfMap = new HashMap<>();
@@ -737,7 +750,17 @@ final class StringsPTest {
   /** Test arrayToStringAndClass(). */
   @Test
   void test_arrayToStringAndClass() {
-    // Tests go here.
+    assertEquals("null", StringsP.arrayToStringAndClass(null));
+    assertEquals("[1, 2] [class [I]", StringsP.arrayToStringAndClass(new int[] {1, 2}));
+    assertEquals(
+        "[a [class java.lang.String], null] [class [Ljava.lang.String;]",
+        StringsP.arrayToStringAndClass(new String[] {"a", null}));
+    Object[] selfArray = new Object[1];
+    selfArray[0] = selfArray;
+    assertEquals(
+        "[cyclic_reference [class [Ljava.lang.Object;]] [class [Ljava.lang.Object;]",
+        StringsP.arrayToStringAndClass(selfArray));
+    assertThrows(IllegalArgumentException.class, () -> StringsP.arrayToStringAndClass("a"));
   }
 
   //
